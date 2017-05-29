@@ -24,7 +24,7 @@ List listCreate(CopyListElement copyElement, FreeListElement freeElement){
         return NULL;
     new_list->free=freeElement;
     new_list->copy=copyElement;
-    new_list->iterator=0;
+    new_list->iterator=NULL;
     new_list->size=0;
     return new_list;
 }
@@ -54,6 +54,8 @@ ListResult listInsertFirst(List list, ListElement element){
     list->size++;
     tmp->next=list->first;
     list->first=tmp;
+    if(list->size==1)
+        list->iterator=list->first;
     return LIST_SUCCESS;
 }
 
@@ -92,4 +94,24 @@ ListElement listGetCurrent(List list){
     if(list->iterator==NULL)
         return NULL;
     return (list->iterator->data);
+}
+
+ListResult listInsertAfterCurrent(List list, ListElement element)
+{
+    if(list==NULL)
+        return LIST_NULL_ARGUMENT;
+    Node current_element = list->iterator;
+    if(current_element==NULL)
+        return LIST_INVALID_CURRENT;
+    Node new_element=malloc(sizeof(Node));
+    if(new_element==NULL) // Why isn't this check being referred in errors?
+        return LIST_OUT_OF_MEMORY;
+    new_element->data=list->copy(element);
+    if(new_element->data==NULL)
+        return LIST_OUT_OF_MEMORY;
+    Node tmp = current_element->next;
+    current_element->next=new_element;
+    new_element->next=tmp;
+    list->size++;
+    return LIST_SUCCESS;
 }

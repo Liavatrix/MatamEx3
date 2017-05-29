@@ -9,11 +9,15 @@ void freeString(ListElement str);
 
 int main() {
     List new_list=listCreate(copyString,freeString);
-    ListElement element;
+    ListElement element1,element2;
     char* str=malloc(100);
+    printf("Enter a string");
     scanf(" %s ",str);
-    element=str;
-    listInsertFirst(new_list,element);
+    element1=str;
+    str="Bob";
+    element2=str;
+    listInsertFirst(new_list,element1);
+    listInsertAfterCurrent(new_list,element2);
     free(str);
     listDestroy(new_list);
     return 0;
