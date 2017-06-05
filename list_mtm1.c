@@ -55,7 +55,11 @@ ListResult listInsertFirst(List list, ListElement element){
     tmp->next=list->first;
     list->first=tmp;
     if(list->size==1)
+    {
+        list->first->next=NULL;
         list->iterator=list->first;
+    }
+
     return LIST_SUCCESS;
 }
 
@@ -103,14 +107,14 @@ ListResult listInsertAfterCurrent(List list, ListElement element)
     Node current_element = list->iterator;
     if(current_element==NULL)
         return LIST_INVALID_CURRENT;
-    Node new_element=malloc(sizeof(Node));
+    Node new_element=malloc(sizeof(*new_element));
     if(new_element==NULL) // Why isn't this check being referred in errors?
         return LIST_OUT_OF_MEMORY;
     new_element->data=list->copy(element);
     if(new_element->data==NULL)
         return LIST_OUT_OF_MEMORY;
-    Node tmp = current_element->next;
-    current_element->next=new_element;
+    Node tmp = list->iterator->next;
+    list->iterator->next=new_element;
     new_element->next=tmp;
     list->size++;
     return LIST_SUCCESS;
