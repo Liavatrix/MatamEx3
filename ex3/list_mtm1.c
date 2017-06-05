@@ -29,6 +29,19 @@ List listCreate(CopyListElement copyElement, FreeListElement freeElement){
     return new_list;
 }
 
+//should be written
+List listCopy(List list){
+    if(list==NULL)
+        return NULL;
+    List new_list=listCreate(list->copy,list->free);
+    if(new_list==NULL)
+        return NULL;
+    LIST_FOREACH(ListElement,i,list){
+
+    }
+    return new_list;
+}
+
 void listDestroy(List list){
     if(list==NULL)
         return;
@@ -36,11 +49,22 @@ void listDestroy(List list){
     for(int i=0;i<list->size;i++)
     {
         tmp=list->first->next;
-        list->free(list->first->data);
+        if(list->first->data!=NULL)
+            list->free(list->first->data);
         free(list->first);
         list->first=tmp;
     }
     free(list);
+}
+
+ListResult listClear(List list){
+    if(list==NULL)
+        return LIST_NULL_ARGUMENT;
+    LIST_FOREACH(ListElement,i,list){
+        list->free(i);
+        list->size--;
+    }
+    return LIST_SUCCESS;
 }
 
 ListResult listInsertFirst(List list, ListElement element){
@@ -54,17 +78,8 @@ ListResult listInsertFirst(List list, ListElement element){
     list->size++;
     tmp->next=list->first;
     list->first=tmp;
-    if(list->size==1)
-        list->iterator=list->first;
     return LIST_SUCCESS;
 }
-
-/*List listCopy(List list){
-    if(list==NULL)
-        return NULL;
-    List new_copy=listCreate(list->copy,list->free);
-
-}*/
 
 int listGetSize(List list){
     return (list==NULL) ? -1 : list->size;
@@ -74,7 +89,9 @@ ListElement listGetFirst(List list){
     if(list==NULL)
         return NULL;
     list->iterator=list->first;
-    return list->first->data;
+    if(list->first->data!=NULL)
+        return list->first->data;
+    return NULL;
 }
 
 ListElement listGetNext(List list){
@@ -93,25 +110,48 @@ ListElement listGetCurrent(List list){
         return NULL;
     if(list->iterator==NULL)
         return NULL;
+    assert(list->iterator->data!=NULL);
     return (list->iterator->data);
 }
 
-ListResult listInsertAfterCurrent(List list, ListElement element)
-{
+ListResult listInsertAfterCurrent(List list, ListElement element) {
     if(list==NULL)
         return LIST_NULL_ARGUMENT;
-    Node current_element = list->iterator;
-    if(current_element==NULL)
+    if(listGetCurrent(list)==NULL)
         return LIST_INVALID_CURRENT;
     Node new_element=malloc(sizeof(Node));
-    if(new_element==NULL) // Why isn't this check being referred in errors?
+    if(new_element==NULL)
         return LIST_OUT_OF_MEMORY;
     new_element->data=list->copy(element);
     if(new_element->data==NULL)
         return LIST_OUT_OF_MEMORY;
-    Node tmp = current_element->next;
-    current_element->next=new_element;
+    Node tmp = list->iterator->next;
+    list->iterator->next=new_element;
     new_element->next=tmp;
     list->size++;
     return LIST_SUCCESS;
 }
+
+/*ListResult listInsertBeforeCurrent(List list, ListElement element){
+    if(list==NULL)
+        return LIST_NULL_ARGUMENT;
+    if(listGetCurrent(list)==NULL)
+        return LIST_INVALID_CURRENT;
+    Node new_element=malloc(sizeof(Node));
+    if(new_element==NULL)
+        return LIST_OUT_OF_MEMORY;
+    new_element->data=list->copy(element);
+    if(new_element->data==NULL)
+        return LIST_OUT_OF_MEMORY;
+    Node tmp=NULL;
+    for(Node i=list->first;i;i=i->next){
+        if(i->next==list->iterator)
+            tmp=i;
+    }
+    if(tmp!=NULL) {
+        tmp->next = new_element;
+        new_element->next = list->iterator;
+        list->size++;
+        return LIST_SUCCESS;
+    }
+}*/
