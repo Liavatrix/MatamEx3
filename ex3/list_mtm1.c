@@ -63,7 +63,6 @@ ListResult listInsertFirst(List list, ListElement element){
     return LIST_SUCCESS;
 }
 
-
 ListResult listClear(List list){
     if(list==NULL)
         return LIST_NULL_ARGUMENT;
@@ -73,7 +72,6 @@ ListResult listClear(List list){
     }
     return LIST_SUCCESS;
 }
-
 
 List listCopy(List list){
     if(list==NULL)
@@ -94,10 +92,7 @@ List listCopy(List list){
     return new_copy;
 }
 
-
-
-static int get_iterator_position(List list)
-{
+static int get_iterator_position(List list) {
     Node my_iterator = list->first;
     int count=0;
     for (int i = 0; i < list->size; ++i) {
@@ -112,8 +107,7 @@ static int get_iterator_position(List list)
     return -1;
 }
 
-static Node max_list_element(List list, CompareListElements compareElement)
-{
+static Node max_list_element(List list,int size_of_list, CompareListElements compareElement) {
     Node max = list->first;
     Node iterator = list->first;
     for (int i = 0; i < list->size; ++i) {
@@ -125,20 +119,8 @@ static Node max_list_element(List list, CompareListElements compareElement)
     return max;
 }
 
-static void point_iterator_to_node(List list, Node node)
-{
-    list->iterator=list->first;
-    for (int i = 0; i < list->size; ++i) {
-        if(list->iterator==node)
-        {
-            return;
-        }
-    }
-}
-
-static ListResult remove_node(List list, Node node)
-{
-    point_iterator_to_node(list,node);
+static ListResult remove_node(List list, Node node) {
+    list->iterator=node;
     ListResult func_result=listRemoveCurrent(list);
     if(func_result!=LIST_SUCCESS)
         return func_result;
@@ -146,69 +128,31 @@ static ListResult remove_node(List list, Node node)
     return LIST_SUCCESS;
 }
 
-static ListResult update_original_list(List list,List tmp_list,int iterator_place)
-{
-    ListResult func_result=listInsertFirst(list,tmp_list->first->data);
-    if(func_result!=LIST_SUCCESS)
-        return func_result;
-    list->iterator=list->iterator->next;
-    tmp_list->iterator=tmp_list->first->next;
-    for (int j = 1; j < tmp_list->size; ++j) {
-        func_result=listInsertAfterCurrent(list,tmp_list->iterator->data);
-        if(func_result!=LIST_SUCCESS)
-            return func_result;
-        list->iterator=list->iterator->next;
-        tmp_list->iterator=tmp_list->iterator->next;
-    }
-    list->iterator=list->first;
-    for (int i = 0; i <iterator_place ; ++i) {
-        tmp_list->iterator=tmp_list->iterator->next;
-    }
-
-    listDestroy(tmp_list);
-
-    return LIST_SUCCESS;
-}
-
-ListResult listSort(List list, CompareListElements compareElement)
-{
+ListResult listSort(List list, CompareListElements compareElement) {
     if(list==NULL|| compareElement==NULL)
         return LIST_NULL_ARGUMENT;
-    List tmp_list = listCreate(list->copy,list->free);
-    if(tmp_list==NULL)
-        return LIST_OUT_OF_MEMORY;
     int iterator_place = get_iterator_position(list);
-    if(iterator_place==-1) // This check is not in h file
-        return LIST_INVALID_CURRENT;
-
-   Node max = max_list_element(list,compareElement);
-   ListResult func_result = listInsertFirst(tmp_list,max->data);
-    if(func_result!=LIST_SUCCESS)
-        return func_result;
-    func_result = remove_node(list,max);
-    if(func_result!=LIST_SUCCESS)
-        return func_result;
-    tmp_list->iterator=tmp_list->iterator->next;
-   while(list->size!=0)
-   {
-       max = max_list_element(list,compareElement);
-       func_result=listInsertAfterCurrent(tmp_list,max->data);
-       if(func_result!=LIST_SUCCESS)
-           return func_result;
+    assert(iterator_place!=-1);
+    ListResult func_result;
+    Node max=NULL;
+    for(int i=0;i<list->size;i++)
+    {
+       max = max_list_element(list,(list->size)-i,compareElement);
        func_result=remove_node(list,max);
        if(func_result!=LIST_SUCCESS)
            return func_result;
-       tmp_list->iterator=tmp_list->iterator->next;
-   }
-
-    func_result = update_original_list(list,tmp_list,iterator_place);
-    return func_result;
-
+       func_result=listInsertLast(list,max->data);
+       if(func_result!=LIST_SUCCESS)
+           return func_result;
+    }
+    list->iterator=list->first;
+    for (int i = 0; i <iterator_place ; ++i) {
+        list->iterator=list->iterator->next;
+    }
+    return LIST_SUCCESS;
 }
 
-
-ListResult listRemoveCurrent(List list)
-{
+ListResult listRemoveCurrent(List list) {
     if(list==NULL)
         return LIST_NULL_ARGUMENT;
     if(list->iterator==NULL)
@@ -216,25 +160,20 @@ ListResult listRemoveCurrent(List list)
     Node tmp=NULL;
     if(list->iterator==list->first)
     {
-        tmp=list->first->next;
-        list->first->next=NULL;
-        list->free(list->first);
-        list->first=tmp;
+        list->first=list->iterator->next;
     } else {
-
         Node my_iterator=list->first;
         for (int i = 0; i <list->size ; ++i) {
             if(my_iterator->next==list->iterator)
             {
-                tmp = list->iterator->next;
-                my_iterator->next=NULL;
-                list->free(list->iterator);
-                my_iterator->next=tmp;
+                my_iterator->next=list->iterator->next;
                 break;
             }
             my_iterator=my_iterator->next;
         }
     }
+    list->free(list->iterator->data);
+    free(list->iterator);
     list->size--;
     list->iterator=NULL;
     return LIST_SUCCESS;
@@ -270,15 +209,13 @@ ListElement listGetCurrent(List list){
     return (list->iterator->data);
 }
 
-ListResult listInsertAfterCurrent(List list, ListElement element)
-{
+ListResult listInsertAfterCurrent(List list, ListElement element) {
     if(list==NULL)
         return LIST_NULL_ARGUMENT;
-    Node current_element = list->iterator;
-    if(current_element==NULL)
+    if(listGetCurrent(list)==NULL)
         return LIST_INVALID_CURRENT;
-    Node new_element=malloc(sizeof(*new_element));
-    if(new_element==NULL) // Why isn't this check being referred in errors?
+    Node new_element=malloc(sizeof(Node));
+    if(new_element==NULL)
         return LIST_OUT_OF_MEMORY;
     new_element->data=list->copy(element);
     if(new_element->data==NULL)
@@ -293,8 +230,6 @@ ListResult listInsertAfterCurrent(List list, ListElement element)
 ListResult listInsertBeforeCurrent(List list, ListElement element){
     if(list==NULL)
         return LIST_NULL_ARGUMENT;
-    if(list->size==0)
-        listInsertFirst(list,element);
     if(listGetCurrent(list)==NULL)
         return LIST_INVALID_CURRENT;
     Node new_element=malloc(sizeof(Node));
@@ -318,24 +253,22 @@ ListResult listInsertBeforeCurrent(List list, ListElement element){
     return LIST_INVALID_CURRENT;
 }
 
-ListResult listInsertLast(List list, ListElement element)
-{
+ListResult listInsertLast(List list, ListElement element) {
     if(list==NULL)
         return LIST_NULL_ARGUMENT;
-    Node original_iterator_place=list->iterator;
+    Node original_iterator=list->iterator;
     list->iterator=list->first;
-    for (int i = 0; i < list->size; ++i) {
+    for (int i =0 ; i < (list->size)-1; ++i) {
         list->iterator=list->iterator->next;
     }
     ListResult func_result = listInsertAfterCurrent(list,element);
     if(func_result!=LIST_SUCCESS)
         return func_result;
-    list->iterator=original_iterator_place;
+    list->iterator=original_iterator;
     return LIST_SUCCESS;
 }
 
-List listFilter(List list, FilterListElement filterElement, ListFilterKey key)
-{
+List listFilter(List list, FilterListElement filterElement, ListFilterKey key) {
     if(list==NULL || filterElement==NULL)
         return NULL;
     List filtered_list = listCreate(list->copy,list->free);
@@ -361,5 +294,4 @@ List listFilter(List list, FilterListElement filterElement, ListFilterKey key)
 
     filtered_list->iterator=filtered_list->first;
     return filtered_list;
-
 }
