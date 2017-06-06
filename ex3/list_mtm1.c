@@ -63,6 +63,18 @@ ListResult listInsertFirst(List list, ListElement element){
     return LIST_SUCCESS;
 }
 
+
+ListResult listClear(List list){
+    if(list==NULL)
+        return LIST_NULL_ARGUMENT;
+    LIST_FOREACH(ListElement,i,list){
+        list->free(i);
+        list->size--;
+    }
+    return LIST_SUCCESS;
+}
+
+
 List listCopy(List list){
     if(list==NULL)
         return NULL;
@@ -124,49 +136,73 @@ static void point_iterator_to_node(List list, Node node)
     }
 }
 
-ListResult remove_node(List list, Node node)
+static ListResult remove_node(List list, Node node)
 {
     point_iterator_to_node(list,node);
     ListResult func_result=listRemoveCurrent(list);
     if(func_result!=LIST_SUCCESS)
         return func_result;
     list->iterator=list->first;
+    return LIST_SUCCESS;
+}
+
+static ListResult update_original_list(List list,List tmp_list,int iterator_place)
+{
+    ListResult func_result=listInsertFirst(list,tmp_list->first->data);
+    if(func_result!=LIST_SUCCESS)
+        return func_result;
+    list->iterator=list->iterator->next;
+    tmp_list->iterator=tmp_list->first->next;
+    for (int j = 1; j < tmp_list->size; ++j) {
+        func_result=listInsertAfterCurrent(list,tmp_list->iterator->data);
+        if(func_result!=LIST_SUCCESS)
+            return func_result;
+        list->iterator=list->iterator->next;
+        tmp_list->iterator=tmp_list->iterator->next;
+    }
+    list->iterator=list->first;
+    for (int i = 0; i <iterator_place ; ++i) {
+        tmp_list->iterator=tmp_list->iterator->next;
+    }
+
+    listDestroy(tmp_list);
+
+    return LIST_SUCCESS;
 }
 
 ListResult listSort(List list, CompareListElements compareElement)
 {
     if(list==NULL|| compareElement==NULL)
         return LIST_NULL_ARGUMENT;
-    List sorted_list = listCreate(list->copy,list->free);
-    if(sorted_list==NULL)
+    List tmp_list = listCreate(list->copy,list->free);
+    if(tmp_list==NULL)
         return LIST_OUT_OF_MEMORY;
     int iterator_place = get_iterator_position(list);
     if(iterator_place==-1) // This check is not in h file
         return LIST_INVALID_CURRENT;
 
    Node max = max_list_element(list,compareElement);
-   ListResult func_result = listInsertFirst(sorted_list,max->data);
+   ListResult func_result = listInsertFirst(tmp_list,max->data);
     if(func_result!=LIST_SUCCESS)
         return func_result;
     func_result = remove_node(list,max);
     if(func_result!=LIST_SUCCESS)
         return func_result;
+    tmp_list->iterator=tmp_list->iterator->next;
    while(list->size!=0)
    {
        max = max_list_element(list,compareElement);
-       func_result=listInsertAfterCurrent(sorted_list,max->data);
+       func_result=listInsertAfterCurrent(tmp_list,max->data);
        if(func_result!=LIST_SUCCESS)
            return func_result;
        func_result=remove_node(list,max);
        if(func_result!=LIST_SUCCESS)
            return func_result;
+       tmp_list->iterator=tmp_list->iterator->next;
    }
 
-    for (int i = 0; i <iterator_place ; ++i) {
-        sorted_list->iterator=sorted_list->iterator->next;
-    }
-    list = sorted_list;
-    return LIST_SUCCESS;
+    func_result = update_original_list(list,tmp_list,iterator_place);
+    return func_result;
 
 }
 
@@ -280,4 +316,50 @@ ListResult listInsertBeforeCurrent(List list, ListElement element){
     }
 
     return LIST_INVALID_CURRENT;
+}
+
+ListResult listInsertLast(List list, ListElement element)
+{
+    if(list==NULL)
+        return LIST_NULL_ARGUMENT;
+    Node original_iterator_place=list->iterator;
+    list->iterator=list->first;
+    for (int i = 0; i < list->size; ++i) {
+        list->iterator=list->iterator->next;
+    }
+    ListResult func_result = listInsertAfterCurrent(list,element);
+    if(func_result!=LIST_SUCCESS)
+        return func_result;
+    list->iterator=original_iterator_place;
+    return LIST_SUCCESS;
+}
+
+List listFilter(List list, FilterListElement filterElement, ListFilterKey key)
+{
+    if(list==NULL || filterElement==NULL)
+        return NULL;
+    List filtered_list = listCreate(list->copy,list->free);
+    if (filtered_list==NULL)
+        return NULL;
+    Node my_iterator= list->first;
+    ListResult func_result;
+    for (int i = 0; i < list->size; ++i) {
+        if(filterElement(my_iterator->data,key))
+        {
+            if(filtered_list->iterator==NULL)
+            {
+                func_result = listInsertFirst(filtered_list,my_iterator->data);
+            } else
+                func_result = listInsertAfterCurrent(filtered_list,my_iterator->data);
+            if(func_result!=LIST_SUCCESS)
+                return NULL;
+            filtered_list->iterator= filtered_list->iterator->next;
+        }
+
+        my_iterator=my_iterator->next;
+    }
+
+    filtered_list->iterator=filtered_list->first;
+    return filtered_list;
+
 }
