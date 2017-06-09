@@ -50,8 +50,11 @@ static bool testListStringFilter() {
     ASSERT_TEST(listFilter(NULL,isLongerThan,&key) == NULL);
     ASSERT_TEST(listFilter(list,NULL,&key) == NULL);
     List filtered = listFilter(list,isLongerThan, &key);
-//    ASSERT_TEST(listGetSize(filtered) == 1);
-//    ASSERT_TEST(strcmp(listGetFirst(filtered),a[3])==0);
+    ASSERT_TEST(listGetSize(filtered) == 3);
+    listSort(filtered,compareStrings);
+    ASSERT_TEST(strcmp(listGetFirst(filtered),a[0])==0);
+    ASSERT_TEST(strcmp(listGetNext(filtered),a[1])==0);
+    ASSERT_TEST(strcmp(listGetNext(filtered),a[3])==0);
     listDestroy(list);
     listDestroy(filtered);
     return true;
@@ -182,20 +185,20 @@ static bool testListStringInsertBeforeCurrent() {
     char *a[5] = {"aaa", "bbb", "NI", "hello mister fish", "I"};
     List list = listCreate(copyString, freeString);
     ASSERT_TEST(listInsertBeforeCurrent(NULL,a[0])==LIST_NULL_ARGUMENT);
-    ASSERT_TEST(listInsertBeforeCurrent(list,NULL)==LIST_NULL_ARGUMENT);
     ASSERT_TEST(listInsertBeforeCurrent(list,a[0])==LIST_INVALID_CURRENT);
     listInsertFirst(list, a[0]);
     for (int i = 1; i < 4; ++i) {
         listInsertLast(list, a[i]);
-        list=listGetNext(list);
+        listGetNext(list);
     }
     listInsertBeforeCurrent(list,a[4]);
     listGetFirst(list);
     for (int j = 0; j < 4; ++j) {
-        list = listGetNext(list);
+        listGetNext(list);
     }
-    listDestroy(list);
+
     ASSERT_TEST(strcmp(listGetCurrent(list),a[3])==0);
+    listDestroy(list);
     return true;
 }
 
@@ -232,15 +235,15 @@ static bool testListStringRemoveCurrent() {
     listGetFirst(list);
     for (int j = 0; j < listGetSize(list); ++j) {
         ASSERT_TEST(strcmp(listGetCurrent(list),a[j+1])==0);
-        list = listGetNext(list);
+        listGetNext(list);
     }
 
     listGetFirst(list);
-    list=listGetNext(list);
+    listGetNext(list);
     listRemoveCurrent(list);
     listGetFirst(list);
-    list=listGetNext(list);
-    ASSERT_TEST(strcmp(listGetCurrent(list),a[2])==0);
+    listGetNext(list);
+    ASSERT_TEST(strcmp(listGetCurrent(list),a[3])==0);
     listDestroy(list);
     return true;
 }
@@ -258,7 +261,7 @@ static bool testListStringSort() {
     listGetFirst(list);
     listSort(list,compareFunc);
     for (int j = 0; j < listGetSize(list)-1; ++j) {
-        ASSERT_TEST(strcmp(listGetCurrent(list),listGetNext(listGetCurrent(list)))<=0);
+        ASSERT_TEST(strcmp((char*)listGetCurrent(list),(char*)listGetNext(list))<=0);
     }
     listDestroy(list);
     return true;
