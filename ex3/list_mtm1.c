@@ -46,6 +46,7 @@ void listDestroy(List list){
 ListResult listInsertFirst(List list, ListElement element){
     if(list==NULL)
         return  LIST_NULL_ARGUMENT;
+    assert(element!=NULL);
     Node tmp = malloc(sizeof(*tmp));
     assert(tmp!=NULL);
     tmp->data=list->copy(element);
@@ -77,12 +78,12 @@ List listCopy(List list){
     if(list==NULL)
         return NULL;
     List new_copy=listCreate(list->copy,list->free);
-    ListResult func_result = listInsertFirst(new_copy,list->first);
+    ListResult func_result = listInsertFirst(new_copy,list->first->data);
     if(func_result!=LIST_SUCCESS)
         return NULL;
     Node my_iterator = list->first->next;
     for (int i = 1; i < list->size; ++i) {
-        func_result = listInsertAfterCurrent(new_copy,my_iterator);
+        func_result = listInsertAfterCurrent(new_copy,my_iterator->data);
         if(func_result!=LIST_SUCCESS)
             return NULL;
         new_copy->iterator=new_copy->iterator->next;
@@ -107,16 +108,16 @@ static int get_iterator_position(List list) {
     return -1;
 }
 
-static Node max_list_element(List list,int size_of_list, CompareListElements compareElement) {
-    Node max = list->first;
+static Node min_list_element(List list,int size_of_list, CompareListElements compareElement) {
+    Node min = list->first;
     Node iterator = list->first;
     for (int i = 0; i < list->size; ++i) {
-        if(compareElement(iterator->data,max->data)) // current element is "bigger"
-            max = iterator;
+        if(compareElement(min->data,iterator->data)) // current element is "smaller"
+            min = iterator;
         iterator=iterator->next;
     }
 
-    return max;
+    return min;
 }
 
 static ListResult remove_node(List list, Node node) {
@@ -134,14 +135,14 @@ ListResult listSort(List list, CompareListElements compareElement) {
     int iterator_place = get_iterator_position(list);
     assert(iterator_place!=-1);
     ListResult func_result;
-    Node max=NULL;
+    Node min=NULL;
     for(int i=0;i<list->size;i++)
     {
-       max = max_list_element(list,(list->size)-i,compareElement);
-       func_result=remove_node(list,max);
+       min = min_list_element(list,(list->size)-i,compareElement);
+       func_result=remove_node(list,min);
        if(func_result!=LIST_SUCCESS)
            return func_result;
-       func_result=listInsertLast(list,max->data);
+       func_result=listInsertLast(list,min->data);
        if(func_result!=LIST_SUCCESS)
            return func_result;
     }
@@ -157,7 +158,6 @@ ListResult listRemoveCurrent(List list) {
         return LIST_NULL_ARGUMENT;
     if(list->iterator==NULL)
         return LIST_INVALID_CURRENT;
-    Node tmp=NULL;
     if(list->iterator==list->first)
     {
         list->first=list->iterator->next;
@@ -186,6 +186,8 @@ int listGetSize(List list){
 ListElement listGetFirst(List list){
     if(list==NULL)
         return NULL;
+    if(list->iterator==NULL)
+        return NULL;
     list->iterator=list->first;
     return list->first->data;
 }
@@ -212,6 +214,7 @@ ListElement listGetCurrent(List list){
 ListResult listInsertAfterCurrent(List list, ListElement element) {
     if(list==NULL)
         return LIST_NULL_ARGUMENT;
+    assert(element!=NULL);
     if(listGetCurrent(list)==NULL)
         return LIST_INVALID_CURRENT;
     Node new_element=malloc(sizeof(Node));
@@ -256,15 +259,18 @@ ListResult listInsertBeforeCurrent(List list, ListElement element){
 ListResult listInsertLast(List list, ListElement element) {
     if(list==NULL)
         return LIST_NULL_ARGUMENT;
+    assert(element!=NULL);
     Node original_iterator=list->iterator;
     list->iterator=list->first;
     for (int i =0 ; i < (list->size)-1; ++i) {
-        list->iterator=list->iterator->next;
+        listGetNext(list);
     }
-    ListResult func_result = listInsertAfterCurrent(list,element);
-    if(func_result!=LIST_SUCCESS)
-        return func_result;
+    Node new_element = malloc(sizeof(Node));
+    new_element->data=list->copy(element);
+    new_element->next=NULL;
+    list->iterator->next=new_element;
     list->iterator=original_iterator;
+    list->size++;
     return LIST_SUCCESS;
 }
 
@@ -274,24 +280,31 @@ List listFilter(List list, FilterListElement filterElement, ListFilterKey key) {
     List filtered_list = listCreate(list->copy,list->free);
     if (filtered_list==NULL)
         return NULL;
-    Node my_iterator= list->first;
+    listGetFirst(list);
     ListResult func_result;
     for (int i = 0; i < list->size; ++i) {
-        if(filterElement(my_iterator->data,key))
+        ListElement ptrToCurrent=listGetCurrent(list);
+        Node current = malloc(sizeof(current));
+        current->data= list->copy(ptrToCurrent);
+        if(filterElement(current->data,key))
         {
             if(filtered_list->iterator==NULL)
             {
-                func_result = listInsertFirst(filtered_list,my_iterator->data);
-            } else
-                func_result = listInsertAfterCurrent(filtered_list,my_iterator->data);
-            if(func_result!=LIST_SUCCESS)
-                return NULL;
-            filtered_list->iterator= filtered_list->iterator->next;
+                func_result = listInsertFirst(filtered_list,current->data);
+                if (func_result != LIST_SUCCESS)
+                    return NULL;
+            } else {
+                func_result = listInsertAfterCurrent(filtered_list, current->data);
+                if (func_result != LIST_SUCCESS)
+                    return NULL;
+            }
         }
 
-        my_iterator=my_iterator->next;
+        listGetNext(list);
+        list->free(current->data);
+        free(current);
     }
 
-    filtered_list->iterator=filtered_list->first;
+    listGetFirst(list);
     return filtered_list;
 }
