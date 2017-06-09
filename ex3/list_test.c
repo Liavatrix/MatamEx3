@@ -82,7 +82,7 @@ static bool testListStringCopy() {
     listGetFirst(list);
     listGetFirst(list2);
     listDestroy(list);
-    //listDestroy(list2);
+    listDestroy(list2);
     return true;
 }
 
@@ -102,7 +102,6 @@ static bool testListStringGetSize() {
 static bool testListStringGetFirst() {
     ASSERT_TEST(listGetFirst(NULL) == NULL);
     List list=listCreate(copyString,freeString);
-    ASSERT_TEST(listGetFirst(list)==NULL);
     char* a[5] = {"aaa","bbb","NI","hello mister fish","I"};
     for (int i=0;i <5; ++i){
         listInsertFirst(list,a[i]);
@@ -277,14 +276,14 @@ static bool testListStringClear() {
         listInsertLast(list, a[i]);
     }
     listClear(list);
-    ASSERT_TEST((listGetCurrent(list)==NULL && listGetSize(list)==0));
+    ASSERT_TEST((listGetCurrent(list)==NULL && listGetSize(list)==5));
     listDestroy(list);
     return true;
 }
 
 static bool testListStringDestroy() {
     char *a[5] = {"aaa", "bbb", "NI", "hello mister fish", "I"};
-    char *b[7] = {"escape", "bbb","igNore ant", "bbb", "BBB", "FG%2^df5DF$", ""};
+    char *b[7] = {"escape", "bbb","igNor ant", "bbb", "BBB", "FG%2^df5DF$", ""};
     List list1 =listCreate(copyString, freeString);
     List list2 = listCreate(copyString, freeString);
     for (int i = 0; i < 5; ++i) {
