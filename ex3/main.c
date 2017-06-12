@@ -1,323 +1,254 @@
-//
-// Created by orerez on 07/06/2017.
-//
-
-#include "list_mtm1.h"
-#include "tests/test_utilities.h"
 #include <stdio.h>
-#include <assert.h>
-#include <stdbool.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
+#include "mtm_ex3.h"
 
-static ListElement copyString(ListElement str){
-    assert(str);
-    char* copy = malloc(strlen(str)+1);
-    return copy != NULL ? strcpy(copy, str) : NULL;
-}
+#define BUFFER_SIZE 251
+#define MAX_PARAMETERS 12
 
-static void freeString(ListElement str){
-    free((char*)str);
-}
+MtmErrorCode checkArgumentNum(char*** argv);
 
-static bool isLongerThan(ListElement element,ListFilterKey number) {
-    char* string = element;
-    int num = *(int *)number;
-    return (strlen(string) >num) ;
-}
+MtmErrorCode readOutputParameter(char*** argv, char** output);
 
-static int compareStrings(ListElement element1, ListElement element2)
-{
-    return strcmp((const char*)element1,(const char*)element2);
-}
+MtmErrorCode readInputParameter(char*** argv, char** input);
 
-static bool testListStringCreate() {
-    ASSERT_TEST(listCreate(NULL,NULL) == NULL);
-    ASSERT_TEST(listCreate(copyString,NULL) == NULL);
-    ASSERT_TEST(listCreate(NULL,freeString) == NULL);
+MtmErrorCode getLine(FILE* input);
 
-    return true;
-}
+MtmErrorCode matchCommand(char* line);
 
-static bool testListStringFilter() {
 
-    char* a[5] = {"aaa","bbb","NI","hello mister fish","I"};
-    List list = listCreate(copyString,freeString);
-    for (int i=0;i <5; ++i){
-        listInsertFirst(list,a[i]);
+int main(int argc, char** argv) {
+    MtmErrorCode err;
+    err=checkArgumentNum(&argv);
+    if(err!=MTM_SUCCESS){
+        mtmPrintErrorMessage(stdout,err);
+        return -1;
     }
-    int key = 2;
-    ASSERT_TEST(listFilter(NULL,isLongerThan,&key) == NULL);
-    ASSERT_TEST(listFilter(list,NULL,&key) == NULL);
-    List filtered = listFilter(list,isLongerThan, &key);
-    ASSERT_TEST(listGetSize(filtered) == 3);
-    listSort(filtered,compareStrings);
-    ASSERT_TEST(strcmp(listGetFirst(filtered),a[0])==0);
-    ASSERT_TEST(strcmp(listGetNext(filtered),a[1])==0);
-    ASSERT_TEST(strcmp(listGetNext(filtered),a[3])==0);
-    listDestroy(list);
-    listDestroy(filtered);
-    return true;
-}
-static bool testListStringCopy() {
+    char *output_parameter, *input_parameter;
+    FILE* output=stdout;
+    FILE* input=stdin;
 
-    ASSERT_TEST(listCopy(NULL) == NULL);
-    char* a[5] = {"aaa","bbb","NI","hello mister fish","I"};
-    List list = listCreate(copyString,freeString);
-    for (int i=0;i <5; ++i){
-        listInsertFirst(list,a[i]);
+    err=readOutputParameter(&argv,&output_parameter);
+    if(err!=MTM_SUCCESS)
+        mtmPrintErrorMessage(stdout,err);
+    if(output_parameter!=NULL) {
+        output = fopen(output_parameter, "w");
+        if (output == NULL) {
+            mtmPrintErrorMessage(stdout,MTM_CANNOT_OPEN_FILE);
+            free(output_parameter);
+            return 0;
+        }
+    }
+    else{
+        output=stdout;
     }
 
-    List list2 = listCopy(list);
-    listGetFirst(list);
-    listGetFirst(list2);
-    ASSERT_TEST(listGetSize(list)==listGetSize(list2));
-    listGetFirst(list);
-    listGetFirst(list2);
-    for (int j = 0; j < listGetSize(list); ++j) {
-        ASSERT_TEST(strcmp(listGetCurrent(list2),listGetCurrent(list))==0);
-        listGetNext(list);
-        listGetNext(list2);
-    }
-    listGetFirst(list);
-    listGetFirst(list2);
-    listDestroy(list);
-    listDestroy(list2);
-    return true;
-}
+    err=readInputParameter(&argv,&input_parameter);
+    if(err!=MTM_SUCCESS)
+        mtmPrintErrorMessage(output,err);
 
-static bool testListStringGetSize() {
+    if(input_parameter!=NULL) {
+        input = fopen(input_parameter, "r");
+        if (input == NULL) {
+            mtmPrintErrorMessage(output, MTM_CANNOT_OPEN_FILE);
+            free(output_parameter);
+            free(input_parameter);
+            if(output!=stdout)
+                fclose(output);
+            return 0;
+        }
+    }
 
-    ASSERT_TEST(listGetSize(NULL) == -1);
-    char* a[5] = {"aaa","bbb","NI","hello mister fish","I"};
-    List list = listCreate(copyString,freeString);
-    for (int i=0;i <5; ++i){
-        listInsertFirst(list,a[i]);
+    else{
+        input=stdin;
     }
-    ASSERT_TEST(listGetSize(list) == 5);
-    listDestroy(list);
-    return true;
-}
 
-static bool testListStringGetFirst() {
-    ASSERT_TEST(listGetFirst(NULL) == NULL);
-    List list=listCreate(copyString,freeString);
-    char* a[5] = {"aaa","bbb","NI","hello mister fish","I"};
-    for (int i=0;i <5; ++i){
-        listInsertFirst(list,a[i]);
-    }
-    ASSERT_TEST(strcmp(listGetFirst(list),a[4])==0);
-    listDestroy(list);
-    return true;
-}
-
-static bool testListStringGetNext() {
-    ASSERT_TEST(listGetNext(NULL) == NULL);
-    char *a[5] = {"aaa", "bbb", "NI", "hello mister fish", "I"};
-    List list = listCreate(copyString, freeString);
-    ASSERT_TEST(listGetNext(list) == NULL);
-    for (int i = 0; i < 5; ++i) {
-        listInsertFirst(list, a[i]);
-    }
-    listGetFirst(list);
-    ASSERT_TEST(strcmp(listGetNext(list),a[3])==0);
-    for (int j = 0; j < 4; ++j) {
-        listGetNext(list);
-    }
-    ASSERT_TEST(listGetNext(list) == NULL);
-    listDestroy(list);
-    return true;
-}
-
-static bool testListStringGetCurrent() {
-    ASSERT_TEST(listGetCurrent(NULL) == NULL);
-    char *a[5] = {"aaa", "bbb", "NI", "hello mister fish", "I"};
-    List list = listCreate(copyString, freeString);
-    for (int i = 0; i < 5; ++i) {
-        listInsertFirst(list, a[i]);
-    }
-    listGetFirst(list);
-    listGetNext(list);
-    ASSERT_TEST(strcmp(listGetCurrent(list),a[3])==0);
-    listDestroy(list);
-    return true;
-}
-
-static bool testListStringInsertFirst() {
-
-    char *a[5] = {"aaa", "bbb", "NI", "hello mister fish", "I"};
-    List list = listCreate(copyString, freeString);
-    ASSERT_TEST(listInsertFirst(NULL,a[0])==LIST_NULL_ARGUMENT);
-    for (int i = 0; i < 5; ++i) {
-        listInsertFirst(list, a[i]);
-    }
-    listGetFirst(list);
-    for (int j = 0; j < 5; ++j) {
-        ListElement element=listGetCurrent(list);
-        int n =strcmp(element,a[4-j]);
-        ASSERT_TEST(n==0);
-        listGetNext(list);
-    }
-    listDestroy(list);
-    return true;
-}
-
-static bool testListStringInsertLast() {
-    char *a[5] = {"aaa", "bbb", "NI", "hello mister fish", "I"};
-    List list = listCreate(copyString, freeString);
-    ASSERT_TEST(listInsertLast(NULL,a[0])==LIST_NULL_ARGUMENT);
-    listInsertFirst(list, a[0]);
-    for (int i = 1; i < 5; ++i) {
-        listInsertLast(list, a[i]);
-    }
-    listGetFirst(list);
-    for (int j = 0; j < 5; ++j) {
-        ASSERT_TEST(strcmp(listGetCurrent(list),a[j])==0);
-        listGetNext(list);
-    }
-    listDestroy(list);
-    return true;
+    err=getLine(input);
+    if(output!=stdout)
+        fclose(output);
+    if(input!=stdin)
+        fclose(input);
+    free(output_parameter);
+    free(input_parameter);
 
 }
 
-static bool testListStringInsertBeforeCurrent() {
-    char *a[5] = {"aaa", "bbb", "NI", "hello mister fish", "I"};
-    List list = listCreate(copyString, freeString);
-    ASSERT_TEST(listInsertBeforeCurrent(NULL,a[0])==LIST_NULL_ARGUMENT);
-    ASSERT_TEST(listInsertBeforeCurrent(list,a[0])==LIST_INVALID_CURRENT);
-    listInsertFirst(list, a[0]);
-    for (int i = 1; i < 4; ++i) {
-        listInsertLast(list, a[i]);
-        listGetNext(list);
+/**
+ * count the numbers of command line parameters
+ * if the number is not in {0,2,4} return invalid error
+ * @param argv - address to the command line parameter array
+ * @param input - an address where the return value should be stored
+ * @return MTM_SUCCESS if no error occured, or the name of the error occured.
+ */
+MtmErrorCode checkArgumentNum(char*** argv){
+    int i;
+    for (i = 1; argv[i]!=NULL ; ++i) {
     }
-    listInsertBeforeCurrent(list,a[4]);
-    listGetFirst(list);
-    for (int j = 0; j < 4; ++j) {
-        listGetNext(list);
-    }
-
-    ASSERT_TEST(strcmp(listGetCurrent(list),a[3])==0);
-    listDestroy(list);
-    return true;
+    if(i==0||i==2||i==4)
+        return MTM_SUCCESS;
+    return MTM_INVALID_COMMAND_LINE_PARAMETERS;
 }
 
-static bool testListStringInsertAfterCurrent() {
-    char *a[5] = {"aaa", "bbb", "NI", "hello mister fish", "I"};
-    List list = listCreate(copyString, freeString);
-    ASSERT_TEST(listInsertAfterCurrent(NULL,a[0])==LIST_NULL_ARGUMENT);
-    ASSERT_TEST(listInsertAfterCurrent(list,a[0])==LIST_INVALID_CURRENT);
-    listInsertFirst(list, a[0]);
-    for (int i = 1; i < 5; ++i) {
-        listInsertAfterCurrent(list, a[i]);
-        listGetNext(list);
-    }
-    listGetFirst(list);
-    for (int j = 0; j < 5; ++j) {
-        ASSERT_TEST(strcmp(listGetCurrent(list),a[j])==0);
-        listGetNext(list);
-    }
-    listDestroy(list);
-    return true;
+/**
+ * This function check if the program got "-o" flag.
+ * in case there is not such a flag, the return value will be NULL
+ * In case the format is invalid (no file name after "-o"), the return
+ * value will be the relevant error name.
+ *
+ * @param argv - an address to an array of char* which holds the arguments of the main
+ * @param output - an address to to the string which should hold the output return value
+ *
+ */
+MtmErrorCode readOutputParameter(char*** argv,char** output){
+    *output=NULL;
+    for(int i=1;argv[i]!=NULL;i++)
+    {
+        if(strcmp(*argv[i],"-o")==0)
+        {
+            if(argv[i+1]==NULL||strcmp(*argv[i+1],"-i"))
+                return MTM_INVALID_COMMAND_LINE_PARAMETERS;
 
+            *output=malloc(strlen(*argv[i+1])+1);
+
+            if(*output==NULL)
+                return (MTM_OUT_OF_MEMORY);
+
+            strcpy(*output,*argv[i+1]);
+            return MTM_SUCCESS;
+        }
+    }
+    return MTM_SUCCESS;
 }
 
-static bool testListStringRemoveCurrent() {
-    char *a[5] = {"aaa", "bbb", "NI", "hello mister fish", "I"};
-    List list = listCreate(copyString, freeString);
-    ASSERT_TEST(listRemoveCurrent(NULL)==LIST_NULL_ARGUMENT);
-    listInsertFirst(list, a[0]);
-    for (int i = 1; i < 5; ++i) {
-        listInsertLast(list, a[i]);
-    }
-    listGetFirst(list);
-    listRemoveCurrent(list);
-    listGetFirst(list);
-    for (int j = 0; j < listGetSize(list); ++j) {
-        ASSERT_TEST(strcmp(listGetCurrent(list),a[j+1])==0);
-        listGetNext(list);
-    }
+/**
+ * This function check if the program got "-i" flag.
+ * in case there is not such a flag, the return value will be NULL
+ * In case the format is invalid (no file name after "-i"), the return
+ * value will be the relevant error name.
+ *
+ * @param argv - an address to an array of char* which holds the arguments of the main
+ * @param input - an address to to the string which should hold the input return value
+ *
+ */
+MtmErrorCode readInputParameter(char*** argv, char** input){
+    *input=NULL;
+    for(int i=1;argv[i]!=NULL;i++)
+    {
+        if(strcmp(*argv[i],"-i")==0)
+        {
+            if(argv[i+1]==NULL||strcmp(*argv[i+1],"-o"))
+                return MTM_INVALID_COMMAND_LINE_PARAMETERS;
 
-    listGetFirst(list);
-    listGetNext(list);
-    listRemoveCurrent(list);
-    listGetFirst(list);
-    listGetNext(list);
-    ASSERT_TEST(strcmp(listGetCurrent(list),a[3])==0);
-    listDestroy(list);
-    return true;
+            *input=malloc(strlen(*argv[i+1])+1);
+
+            if(*input==NULL)
+                return (MTM_OUT_OF_MEMORY);
+
+            strcpy(*input,*argv[i+1]);
+            return MTM_SUCCESS;
+        }
+    }
+    return MTM_SUCCESS;
 }
 
-static bool testListStringSort() {
-    char *a[6] = {"aaa", "bbb", "NI", "hello mister fish", "aaa","I"};
-    List list = listCreate(copyString, freeString);
-    CompareListElements compareFunc = &compareStrings;
-    ASSERT_TEST(listSort(NULL,compareStrings)==LIST_NULL_ARGUMENT);
-    ASSERT_TEST(listSort(list,NULL)==LIST_NULL_ARGUMENT);
-    listInsertFirst(list, a[0]);
-    for (int i = 1; i < 6; ++i) {
-        listInsertLast(list, a[i]);
+MtmErrorCode getLine(FILE* input){
+    MtmErrorCode err;
+    char line[BUFFER_SIZE];
+    char* command_and_arguments;
+
+    while(fgets(line,BUFFER_SIZE,input)!=NULL) {
+        int letters_copied = 0;
+        command_and_arguments=malloc(strlen(line)+1);
+        if(command_and_arguments==NULL)
+            return MTM_OUT_OF_MEMORY;
+        for (int i = 0; i < strlen(line); i++) {
+            if(line[i]=='\t'||line[i]=='\n'){
+                continue;
+            }
+            if (line[i] == '#' && letters_copied == 0) {
+                i = (int) strlen(line);
+                continue;
+            }
+            if (line[i] != ' '){
+                command_and_arguments[letters_copied++] = line[i];
+            }
+            else {
+                if (letters_copied != 0 && line[i - 1] != ' '){
+                    command_and_arguments[letters_copied++] = line[i];
+                }
+            }
+        }
+        command_and_arguments[letters_copied]='\0';
+        err = matchCommand(command_and_arguments);
+        if (err != MTM_SUCCESS){
+            free(command_and_arguments);
+            return err;
+        }
+        free(command_and_arguments);
     }
-    listGetFirst(list);
-    listSort(list,compareFunc);
-    for (int j = 0; j < listGetSize(list)-1; ++j) {
-        ASSERT_TEST(strcmp((char*)listGetCurrent(list),(char*)listGetNext(list))<=0);
-    }
-    listDestroy(list);
-    return true;
+    return MTM_SUCCESS;
 }
 
-static bool testListStringClear() {
-
-    char *a[5] = {"aaa", "bbb", "NI", "hello mister fish", "I"};
-    List list = listCreate(copyString, freeString);
-    ASSERT_TEST(listClear(NULL)==LIST_NULL_ARGUMENT);
-    listInsertFirst(list, a[0]);
-    for (int i = 1; i < 5; ++i) {
-        listInsertLast(list, a[i]);
+MtmErrorCode matchCommand(char* line) {
+    char *parameters[MAX_PARAMETERS];
+    int parameters_inserted = 0;
+    MtmErrorCode err=MTM_INVALID_COMMAND_LINE_PARAMETERS;
+    char *token=line;
+    token = strtok(token, " -");
+    while (token != NULL) {
+        parameters[parameters_inserted] = malloc(strlen(token)+1);
+        strcpy(parameters[parameters_inserted],token);
+        parameters_inserted++;
+        token = strtok(NULL, " -\t");
     }
-    listClear(list);
-    ASSERT_TEST((listGetCurrent(list)==NULL && listGetSize(list)==5));
-    listDestroy(list);
-    return true;
-}
-
-static bool testListStringDestroy() {
-    char *a[5] = {"aaa", "bbb", "NI", "hello mister fish", "I"};
-    char *b[7] = {"escape", "bbb","igNor ant", "bbb", "BBB", "FG%2^df5DF$", ""};
-    List list1 =listCreate(copyString, freeString);
-    List list2 = listCreate(copyString, freeString);
-    for (int i = 0; i < 5; ++i) {
-        listInsertFirst(list1,a[i]);
+    if (parameters_inserted < 2)
+        err= MTM_INVALID_COMMAND_LINE_PARAMETERS;
+    if (strcmp(parameters[0], "company") == 0 &&
+        strcmp(parameters[1], "add") == 0 && parameters_inserted > 2) {
+        err= (addCompany(parameters[2], parameters[3]));
     }
-    for (int i = 0; i < 7; ++i) {
-        listInsertFirst(list2,b[i]);
+    if (strcmp(parameters[0], "company") == 0 &&
+        strcmp(parameters[1], "remove") == 0 && parameters_inserted > 1) {
+        err= removeCompany(parameters[2]);
     }
-
-    listDestroy(list1);
-    listDestroy(list2);
-    return true;
+    if (strcmp(parameters[0], "room") == 0 &&
+        strcmp(parameters[1], "add") == 0 && parameters_inserted > 7) {
+        err= addRoom(parameters[2], atoi(parameters[3]), atoi(parameters[4]),
+                       atoi(parameters[5]), atoi(parameters[6]),
+                       atoi(parameters[7]), atoi(parameters[8]));
+    }
+    if (strcmp(parameters[0], "room") == 0 &&
+        strcmp(parameters[1], "remove") == 0 && parameters_inserted > 2) {
+        err= removeRoom(parameters[2], atoi(parameters[3]));
+    }
+    if (strcmp(parameters[0], "escaper") == 0 &&
+        strcmp(parameters[1], "add") == 0 && parameters_inserted > 3) {
+        err= addEscaper(parameters[2], parameters[3], atoi(parameters[4]));
+    }
+    if (strcmp(parameters[0], "escaper") == 0 &&
+        strcmp(parameters[1], "remove") == 0 && parameters_inserted > 1) {
+        err= removeEscaper(parameters[2]);
+    }
+    if (strcmp(parameters[0], "escaper") == 0 &&
+        strcmp(parameters[1], "order") == 0 && parameters_inserted > 6) {
+        err= escaperOrder(parameters[2], parameters[3], atoi(parameters[4]),
+                            atoi(parameters[5]), atoi(parameters[6]),
+                            atoi(parameters[7]));
+    }
+    if (strcmp(parameters[0], "company") == 0 &&
+        strcmp(parameters[1], "remove") == 0 && parameters_inserted > 2) {
+        err= escaperRecommend(parameters[2], atoi(parameters[3]));
+    }
+    if (strcmp(parameters[0], "report") == 0 &&
+        strcmp(parameters[1], "day") == 0) {
+        err= reportDay();
+    }
+    if (strcmp(parameters[0], "report") == 0 &&
+        strcmp(parameters[1], "best") == 0) {
+        err= reportBest();
+    }
+    for(int i=0;i<parameters_inserted;i++){
+        free(parameters[i]);
+    }
+    return err;
 }
-
-int main (int argv, char** arc){
-    RUN_TEST(testListStringCreate);
-    RUN_TEST(testListStringInsertFirst);
-    RUN_TEST(testListStringDestroy);
-    RUN_TEST(testListStringGetFirst);
-    RUN_TEST(testListStringGetNext);
-    RUN_TEST(testListStringGetCurrent);
-    RUN_TEST(testListStringGetSize);
-    RUN_TEST(testListStringInsertLast);
-    RUN_TEST(testListStringInsertAfterCurrent);
-    RUN_TEST(testListStringInsertBeforeCurrent);
-    RUN_TEST(testListStringRemoveCurrent);
-    RUN_TEST(testListStringClear);
-    RUN_TEST(testListStringCopy);
-    RUN_TEST(testListStringSort);
-    RUN_TEST(testListStringFilter);
-
-    return 0;
-}
-
-
-
-
