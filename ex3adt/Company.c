@@ -235,7 +235,8 @@ char* GetCompanyEmail(Company company) {
     //returns pointer to email !!!
 }
 
-
-
-
+Set  GetCompanyRooms(Company company){
+    assert(company!=NULL);
+    return company->rooms;
+}
 

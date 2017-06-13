@@ -1,5 +1,7 @@
 #include "mtm_ex3.h"
 #include "Order.h"
+#include <assert.h>
+#include "list.h"
 
 #ifndef EX3ADT_ESCAPER_H
 #define EX3ADT_ESCAPER_H
@@ -11,11 +13,13 @@ Escaper CreateEscaper(char* email, TechnionFaculty faculty, int skill_level,MtmE
 
 Escaper CopyEscaper(Escaper escaper, MtmErrorCode* error_code);
 
+List GetListOfEscaper(Escaper escaper);
+
 MtmErrorCode DestroyEscaper(Escaper escaper);
 
-MtmErrorCode CreateInsertOrderFirst(Escaper escaper,int id, int day, int hour, int num_ppl);
+MtmErrorCode CreateInsertOrderFirst(Escaper escaper,TechnionFaculty faculty,int id, int day, int hour, int num_ppl);
 
-MtmErrorCode CreateInsertOrderLast(Escaper escaper,int id, int day, int hour, int num_ppl);
+MtmErrorCode CreateInsertOrderLast(Escaper escaper,TechnionFaculty faculty,int id, int day, int hour, int num_ppl);
 
 MtmErrorCode CreateInsertOrderBeforeCurrent(Escaper escaper,int id, int day, int hour, int num_ppl);
 

@@ -125,28 +125,41 @@ static bool testRoomAdd(){
     return true;
 }
 
-//static bool testRoomRemove(){
-//
-//    MtmErrorCode error_code=MTM_SUCCESS;
-//    System system = InitiateSystem();
-//    CompanyAdd(system,"Liav@gma",COMPUTER_SCIENCE);
-//    CompanyAdd(system,"jgnjsd@",ELECTRICAL_ENGINEERING);
-//    CompanyAdd(system,"harab@shtaal",ELECTRICAL_ENGINEERING);
-//    CompanyAdd(system,"tsu@berbooler",BIOMEDICAL_ENGINEERING);
-//
-//    RoomAdd(system,"Liav@gma",3,16,5,7,2,18);
-//    RoomAdd(system,"Liav@gma",5,32,3,2,1,20);
-//    RoomAdd(system,"jgnjsd@",3,16,5,7,2,18);
-//    RoomAdd(system,"harab@shtaal",7,20,5,4,12,1);
-//    RoomAdd(system,"tsu@berbooler",3,8,5,7,2,18);
-//
-//    RoomRemove(system,ELECTRICAL_ENGINEERING,3);
-//
-//
-//    DestroySystem(system);
-//
-//    return true;
-//}
+static bool testRoomRemove(){
+
+    MtmErrorCode error_code=MTM_SUCCESS;
+    System system = InitiateSystem();
+    CompanyAdd(system,"Liav@gma",COMPUTER_SCIENCE);
+    CompanyAdd(system,"jgnjsd@",ELECTRICAL_ENGINEERING);
+    CompanyAdd(system,"harab@shtaal",ELECTRICAL_ENGINEERING);
+    CompanyAdd(system,"tsu@berbooler",BIOMEDICAL_ENGINEERING);
+
+    RoomAdd(system,"Liav@gma",3,16,5,7,2,18);
+    RoomAdd(system,"Liav@gma",5,32,3,2,1,20);
+    RoomAdd(system,"jgnjsd@",3,16,5,7,2,18);
+    RoomAdd(system,"harab@shtaal",7,20,5,4,12,1);
+    RoomAdd(system,"tsu@berbooler",3,8,5,7,2,18);
+
+    Company company = RoomContainer(ELECTRICAL_ENGINEERING,3,GetCompanyList(system));
+    Room room = SearchRoom(company,3);
+    ASSERT_TEST(room!=NULL);
+    error_code=RoomRemove(system,ELECTRICAL_ENGINEERING,3);
+    room = SearchRoom(company,3);
+    ASSERT_TEST(room==NULL);
+    ASSERT_TEST(error_code==MTM_SUCCESS);
+    error_code=RoomRemove(system,ELECTRICAL_ENGINEERING,3);
+    ASSERT_TEST(error_code==MTM_ID_DOES_NOT_EXIST);
+    company = RoomContainer(COMPUTER_SCIENCE,3,GetCompanyList(system));
+    room = SearchRoom(company,3);
+    ASSERT_TEST(room!=NULL);
+    error_code=RoomRemove(system,COMPUTER_SCIENCE,3);
+    room = SearchRoom(company,3);
+    ASSERT_TEST(room==NULL);
+    ASSERT_TEST(error_code==MTM_SUCCESS);
+    DestroySystem(system);
+
+    return true;
+}
 
 static bool testEscaperAdd(){
     System  system = InitiateSystem();
@@ -216,6 +229,45 @@ static bool testEscaperRemove(){
     DestroySystem(system);
     return true;
 }
+
+static bool testsEscaperOrder(){
+    System  system = InitiateSystem();
+    assert(system!=NULL);
+    CompanyAdd(system,"MARVEL@",PHYSICS);
+    MtmErrorCode err=EscaperAdd(system,"liav@gmail",COMPUTER_SCIENCE,4);
+    EscaperAdd(system,"dfksdk@",MEDICINE,5);
+    RoomAdd(system,"MARVEL@",22,64,3,4,2,16);
+    RoomAdd(system,"DC@",13,64,3,4,2,16);
+    RoomAdd(system,"MARVEL@",9,40,3,4,5,8); //Time
+    err=EscaperOrder(system,"liav@gmail",PHYSICS,22,2,4,2);
+    ASSERT_TEST(err==MTM_SUCCESS);
+    ASSERT_TEST(setGetFirst(GetEscapersSet(system))!=NULL);
+    err=EscaperOrder(system,"dfksdk@",PHYSICS,22,2,4,2);
+    ASSERT_TEST(err==MTM_RESERVATION_EXISTS);
+    err=EscaperOrder(system,"li@gmail",PHYSICS,22,3,7,4);
+    ASSERT_TEST(err==MTM_CLIENT_EMAIL_DOES_NOT_EXIST);
+    err=EscaperOrder(system,"liav@gmail",PHYSICS,13,2,4,3);
+    ASSERT_TEST(err==MTM_CLIENT_IN_ROOM);
+    err=EscaperOrder(system,"liav@gmail",PHYSICS,9,5,2,3);
+    ASSERT_TEST(err==MTM_ROOM_NOT_AVAILABLE);
+    DestroySystem(system);
+    return true;
+}
+
+static bool testRemoveOrder(){
+    System  system = InitiateSystem();
+    assert(system!=NULL);
+    CompanyAdd(system,"MARVEL@",PHYSICS);
+    MtmErrorCode err=EscaperAdd(system,"liav@gmail",COMPUTER_SCIENCE,4);
+    EscaperAdd(system,"dfksdk@",MEDICINE,5);
+    RoomAdd(system,"MARVEL@",22,64,3,4,2,16);
+    RoomAdd(system,"DC@",13,64,3,4,2,16);
+    RoomAdd(system,"MARVEL@",9,40,3,4,5,8); //Time
+    err=EscaperOrder(system,"liav@gmail",PHYSICS,22,2,4,2);
+
+}
+
+
 /*
 static bool testsSortOrders(){
     MtmErrorCode error_code=MTM_SUCCESS;
@@ -332,9 +384,11 @@ int main (int argv, char** arc){
     RUN_TEST(testCompanyAdd);
     RUN_TEST(testCompanyRemove);
     RUN_TEST(testRoomAdd);
+    RUN_TEST(testRoomRemove)
     RUN_TEST(testEscaperAdd);
     RUN_TEST(testEscaperRemove);
-//    RUN_TEST(testsSortOrders);
+    RUN_TEST(testsEscaperOrder);
+    RUN_TEST(testRemoveOrder);
 //    RUN_TEST(testOrderFinders);
 //    RUN_TEST(testGetSkillLevel);
 //    RUN_TEST(testGetEscaperFaculty);

@@ -30,6 +30,8 @@ typedef struct escCompany* Company;
 * 	A new Company in case of success.
 */
 
+Set  GetCompanyRooms(Company company);
+
 Company CreateCompany(char* email, TechnionFaculty faculty,MtmErrorCode* error_code);
 
 Company CopyCompany(Company company,MtmErrorCode* error_code);

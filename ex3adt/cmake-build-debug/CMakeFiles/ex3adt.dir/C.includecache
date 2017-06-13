@@ -55,6 +55,8 @@ mtm_ex3.h
 C:/Users/orerez/CLionProjects/ex3adt/mtm_ex3.h
 list.h
 C:/Users/orerez/CLionProjects/ex3adt/list.h
+set.h
+C:/Users/orerez/CLionProjects/ex3adt/set.h
 
 C:/Users/orerez/CLionProjects/ex3adt/Escaper.c
 stdlib.h
@@ -73,6 +75,10 @@ mtm_ex3.h
 C:/Users/orerez/CLionProjects/ex3adt/mtm_ex3.h
 Order.h
 C:/Users/orerez/CLionProjects/ex3adt/Order.h
+assert.h
+-
+list.h
+C:/Users/orerez/CLionProjects/ex3adt/list.h
 
 C:/Users/orerez/CLionProjects/ex3adt/Order.c
 stdlib.h
