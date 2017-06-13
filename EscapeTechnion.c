@@ -46,14 +46,43 @@ void FreeEscaper(ListElement element) {
 }
 
 int CompareEscapers(ListElement element1, ListElement element2){
-    Escaper escaper1 = (Escaper)element1;
-    Escaper escaper2 = (Escaper)element2;
-    assert((escaper1!=NULL) && (escaper2!=NULL));
-    if(GetEscaperFaculty(escaper1) > GetEscaperFaculty(escaper2))
-        return 1;
-    if(GetEscaperFaculty(escaper1) < GetEscaperFaculty(escaper2))
-        return -1;
-    return 0;
+    assert((element1!=NULL) && (element2!=NULL));
+    if(strcmp(GetEscaperEmail(element1),GetEscaperEmail(element2))==0)
+        return 0;
+    return 1;
+}
+
+System InitiateSystem(){
+    System system = malloc(sizeof(*system));
+    CopyListElement copy_company_func = CopyCompanyElement;
+    FreeListElement free_company_func = FreeCompany;
+    copySetElements copy_escaper_func = CopyEscaperElement;
+    freeSetElements free_escaper_func = FreeEscaper;
+    compareSetElements compare_escaper_func = CompareEscapers;
+
+    system->Companies = listCreate(copy_company_func,free_company_func);
+    system->Escapers=setCreate(copy_escaper_func,free_escaper_func,compare_escaper_func);
+    return system;
+}
+
+int GetNumberOfCompanies(System system) {
+    int count =0;
+    LIST_FOREACH(Company,i,system->Companies) {
+        count++;
+    }
+    return count;
+}
+
+List GetCompanyList(System  system) {
+    assert(system!=NULL);
+    return system->Companies ==NULL ? NULL : system->Companies;
+}
+
+void DestroySystem(System system) {
+
+    listDestroy(system->Companies);
+    setDestroy(system->Escapers);
+    free(system);
 }
 
 static int EmailExists(char* Email, List list,Set set) {
@@ -72,65 +101,6 @@ static int EmailExists(char* Email, List list,Set set) {
         }
     }
     return 0;
-}
-
-static Company SearchForCompany(char* email,List list) {
-    LIST_FOREACH(Company, i, list) {
-        if (strcmp(email, GetCompanyEmail(i)) == 0) {
-            return i;
-        }
-    }
-    return NULL;
-}
-
-int GetNumberOfCompanies(System system) {
-    int count =0;
-    LIST_FOREACH(Company,i,system->Companies) {
-        count++;
-    }
-    return count;
-}
-
-List GetCompanyList(System  system) {
-    assert(system!=NULL);
-    return system->Companies ==NULL ? NULL : system->Companies;
-}
-
-Company RoomContainer(TechnionFaculty faculty,int id,List list) {
-    LIST_FOREACH(Company,i,list){
-        if(GetCompanyFaculty(i)==faculty){
-            if(SearchRoom(i,id)!=NULL)
-                return i;
-        }
-    }
-    return NULL;
-}
-
-static int IdAlreadyUsed(TechnionFaculty faculty,int id,List list) {
-    Company company = RoomContainer(faculty,id,list);
-    if(company==NULL)
-        return 0;
-    return 1;
-}
-
-System InitiateSystem(){
-    System system = malloc(sizeof(*system));
-    CopyListElement copy_company_func = CopyCompanyElement;
-    FreeListElement free_company_func = FreeCompany;
-    copySetElements copy_escaper_func = CopyEscaperElement;
-    freeSetElements free_escaper_func = FreeEscaper;
-    compareSetElements compare_escaper_func = CompareEscapers;
-
-    system->Companies = listCreate(copy_company_func,free_company_func);
-    system->Escapers=setCreate(copy_escaper_func,free_escaper_func,compare_escaper_func);
-    return system;
-}
-
-void DestroySystem(System system) {
-
-    listDestroy(system->Companies);
-    setDestroy(system->Escapers);
-    free(system);
 }
 
 MtmErrorCode CompanyAdd(System  system,char* email, TechnionFaculty faculty) {
@@ -168,25 +138,38 @@ MtmErrorCode CompanyRemove(System  system,Company company) {
     return MTM_SUCCESS;
 }
 
-MtmErrorCode RoomAdd(System  system,char* email, int id, int price, int num_ppl, int difficulty,int start_time, int end_time) {
-    Company company = SearchForCompany(email,system->Companies);
-    if(company==NULL)
-        return MTM_COMPANY_EMAIL_DOES_NOT_EXIST;
-    TechnionFaculty company_faculty = GetCompanyFaculty(company);
-    if(IdAlreadyUsed(company_faculty,id,system->Companies))
-        return MTM_ID_ALREADY_EXIST;
-    MtmErrorCode error_code = CreateInsertRoom(company,id,price,num_ppl,difficulty,start_time,end_time);
-    if(error_code!=MTM_SUCCESS)
-        return error_code;
+MtmErrorCode EscaperAdd(System system,char* email, TechnionFaculty faculty, int skill_level){
+    MtmErrorCode err=MTM_SUCCESS;
+    Escaper new_escaper = CreateEscaper(email,faculty,skill_level,&err);
+    if(err!=MTM_SUCCESS){
+        return err;
+    }
+    SetResult result;
+    result=setAdd(system->Escapers,new_escaper);
+    DestroyEscaper(new_escaper);
+    if(result!=SET_SUCCESS){
+        assert(result!=SET_NULL_ARGUMENT);
+        if(result==SET_ITEM_ALREADY_EXISTS){
+            return MTM_EMAIL_ALREADY_EXISTS;
+        }
+        if(result==SET_OUT_OF_MEMORY) {
+            return MTM_OUT_OF_MEMORY;
+        }
+    }
     return MTM_SUCCESS;
 }
 
-MtmErrorCode RoomRemove(System  system,TechnionFaculty faculty, int id){
-    MtmErrorCode error_code= MTM_SUCCESS;
-    Company company = RoomContainer(faculty,id,system->Companies);
-    Room room = SearchRoom(company,id);
-    if(company==NULL)
-        return MTM_ID_DOES_NOT_EXIST;
-    error_code=RemoveDestroyRoom(company,room);
-    return error_code;
+MtmErrorCode EscaperRemove(System system, char* email){
+    assert(system!=NULL);
+    SetResult result=SET_ITEM_DOES_NOT_EXIST;
+    SET_FOREACH(Escaper,pVoid,system->Escapers){
+        if(strcmp(GetEscaperEmail(pVoid),email)==0)
+            result=setRemove(system->Escapers,pVoid);
+    }
+    if(result!=SET_SUCCESS){
+        assert(result!=SET_NULL_ARGUMENT);
+        if(result==SET_ITEM_DOES_NOT_EXIST)
+            return MTM_CLIENT_EMAIL_DOES_NOT_EXIST;
+    }
+    return MTM_SUCCESS;
 }
