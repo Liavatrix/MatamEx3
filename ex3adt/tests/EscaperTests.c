@@ -18,27 +18,27 @@
 static bool testValidateParameters(Escaper first_escaper) {
     MtmErrorCode error_code=MTM_SUCCESS;
 
-    error_code=CreateInsertOrderFirst(first_escaper,0,5,7,2);
+    error_code=CreateInsertOrderFirst(first_escaper,CHEMISTRY,0,5,7,2);
     ASSERT_TEST(GetNumOrders(first_escaper)==0);
     ASSERT_TEST(GetFirstOrder(first_escaper)==NULL);
     ASSERT_TEST(error_code==MTM_INVALID_PARAMETER);
 
-    error_code=CreateInsertOrderFirst(first_escaper,1,-1,7,2);
+    error_code=CreateInsertOrderFirst(first_escaper,CHEMISTRY,1,-1,7,2);
     ASSERT_TEST(GetNumOrders(first_escaper)==0);
     ASSERT_TEST(GetFirstOrder(first_escaper)==NULL);
     ASSERT_TEST(error_code==MTM_INVALID_PARAMETER);
 
-    error_code=CreateInsertOrderFirst(first_escaper,1,5,-2,2);
+    error_code=CreateInsertOrderFirst(first_escaper,CHEMISTRY,1,5,-2,2);
     ASSERT_TEST(GetNumOrders(first_escaper)==0);
     ASSERT_TEST(GetFirstOrder(first_escaper)==NULL);
     ASSERT_TEST(error_code==MTM_INVALID_PARAMETER);
 
-    error_code=CreateInsertOrderFirst(first_escaper,1,5,24,2);
+    error_code=CreateInsertOrderFirst(first_escaper,CHEMISTRY,1,5,24,2);
     ASSERT_TEST(GetNumOrders(first_escaper)==0);
     ASSERT_TEST(GetFirstOrder(first_escaper)==NULL);
     ASSERT_TEST(error_code==MTM_INVALID_PARAMETER);
 
-    error_code=CreateInsertOrderFirst(first_escaper,1,5,7,-3);
+    error_code=CreateInsertOrderFirst(first_escaper,CHEMISTRY,1,5,7,-3);
     ASSERT_TEST(GetNumOrders(first_escaper)==0);
     ASSERT_TEST(GetFirstOrder(first_escaper)==NULL);
     ASSERT_TEST(error_code==MTM_INVALID_PARAMETER);
@@ -85,14 +85,14 @@ static bool testCreateInsertOrder(){
     Escaper first_escaper = CreateEscaper("hanzamzim12^7*@wallak",COMPUTER_SCIENCE,8,&error_code);
     testValidateParameters(first_escaper);
 
-    error_code=CreateInsertOrderFirst(first_escaper,4,5,7,2);
+    error_code=CreateInsertOrderFirst(first_escaper,CHEMISTRY,4,5,7,2);
     Order order = GetFirstOrder(first_escaper);
     ASSERT_TEST(error_code==MTM_SUCCESS);
     ASSERT_TEST(GetNumOrders(first_escaper)==1);
     ASSERT_TEST(order!=NULL);
     ASSERT_TEST(GetID(order)==4);
 
-    error_code=CreateInsertOrderFirst(first_escaper,1,8,2,5);
+    error_code=CreateInsertOrderFirst(first_escaper,CHEMISTRY,1,8,2,5);
     order = GetFirstOrder(first_escaper);
     ASSERT_TEST(error_code==MTM_SUCCESS);
     ASSERT_TEST(GetNumOrders(first_escaper)==2);
@@ -114,7 +114,7 @@ static bool testCreateInsertOrder(){
     ASSERT_TEST(order!=NULL);
     ASSERT_TEST(GetID(order)==2);
 
-    error_code=CreateInsertOrderLast(first_escaper,5,17,23,7);
+    error_code=CreateInsertOrderLast(first_escaper,CHEMISTRY,5,17,23,7);
     GetFirstOrder(first_escaper); //restart iterator
     for (int i = 0; i < 3; ++i) {
         GetNextOrder(first_escaper);
@@ -135,10 +135,10 @@ static bool testRemoveDestroyEscaper(){
     MtmErrorCode error_code2=MTM_SUCCESS;
     MtmErrorCode error_code3=MTM_SUCCESS;
     Escaper first_escaper = CreateEscaper("hanzamzim12^7*@wallak",COMPUTER_SCIENCE,8,&error_code1);
-    error_code1=CreateInsertOrderFirst(first_escaper,1,20,4,4);
+    error_code1=CreateInsertOrderFirst(first_escaper,CHEMISTRY,1,20,4,4);
     GetFirstOrder(first_escaper);
     error_code2=CreateInsertOrderAfterCurrent(first_escaper,5,32,2,6);
-    error_code3=CreateInsertOrderLast(first_escaper,4,12,5,7);
+    error_code3=CreateInsertOrderLast(first_escaper,CHEMISTRY,4,12,5,7);
     ASSERT_TEST(error_code1==MTM_SUCCESS && error_code2 ==MTM_SUCCESS && error_code3==MTM_SUCCESS);
     ASSERT_TEST(GetNumOrders(first_escaper)==3);
     GetFirstOrder(first_escaper);
@@ -174,9 +174,9 @@ static bool testClearEscaperOrders(){
 
     MtmErrorCode error_code1=MTM_SUCCESS;
     Escaper first_escaper = CreateEscaper("hanzamzim12^7*@wallak",COMPUTER_SCIENCE,8,&error_code1);
-    CreateInsertOrderFirst(first_escaper,1,20,4,4);
-    CreateInsertOrderLast(first_escaper,5,32,2,2);
-    CreateInsertOrderLast(first_escaper,4,12,5,7);
+    CreateInsertOrderFirst(first_escaper,CHEMISTRY,1,20,4,4);
+    CreateInsertOrderLast(first_escaper,CHEMISTRY,5,32,2,2);
+    CreateInsertOrderLast(first_escaper,CHEMISTRY,4,12,5,7);
     ClearEscaperOrders(first_escaper);
     ASSERT_TEST(GetNumOrders(first_escaper)==0);
     ASSERT_TEST(GetFirstOrder(first_escaper)==NULL);
@@ -187,11 +187,11 @@ static bool testClearEscaperOrders(){
 static bool testsSortOrders(){
     MtmErrorCode error_code=MTM_SUCCESS;
     Escaper first_escaper =CreateEscaper("hanzamzim12^7*@wallak",COMPUTER_SCIENCE,8,&error_code);
-    CreateInsertOrderFirst(first_escaper,7,10,19,3);
-    CreateInsertOrderFirst(first_escaper,2,3,6,2);
-    CreateInsertOrderFirst(first_escaper,1,7,10,5);
-    CreateInsertOrderFirst(first_escaper,8,2,1,4);
-    CreateInsertOrderFirst(first_escaper,20,30,22,7);
+    CreateInsertOrderFirst(first_escaper,CHEMISTRY,7,10,19,3);
+    CreateInsertOrderFirst(first_escaper,CHEMISTRY,2,3,6,2);
+    CreateInsertOrderFirst(first_escaper,CHEMISTRY,1,7,10,5);
+    CreateInsertOrderFirst(first_escaper,CHEMISTRY,8,2,1,4);
+    CreateInsertOrderFirst(first_escaper,CHEMISTRY,20,30,22,7);
     error_code=SortOrders(first_escaper);
     ASSERT_TEST(GetID(GetFirstOrder(first_escaper))==1);
     ASSERT_TEST(GetID(GetNextOrder(first_escaper))==2);
@@ -205,13 +205,13 @@ static bool testsSortOrders(){
 static bool testOrderFinders(){
     MtmErrorCode error_code=MTM_SUCCESS;
     Escaper first_escaper =CreateEscaper("hanzamzim12^7*@wallak",COMPUTER_SCIENCE,8,&error_code);
-    CreateInsertOrderFirst(first_escaper,7,10,19,3);
-    CreateInsertOrderFirst(first_escaper,2,3,6,2);
-    CreateInsertOrderFirst(first_escaper,1,7,10,5);
-    CreateInsertOrderFirst(first_escaper,8,2,1,4);
-    CreateInsertOrderFirst(first_escaper,20,30,22,7);
+    CreateInsertOrderFirst(first_escaper,CHEMISTRY,7,10,19,3);
+    CreateInsertOrderLast(first_escaper,CHEMISTRY,2,3,6,2);
+    CreateInsertOrderLast(first_escaper,CHEMISTRY,1,7,10,5);
+    CreateInsertOrderLast(first_escaper,CHEMISTRY,8,2,1,4);
+    CreateInsertOrderLast(first_escaper,CHEMISTRY,20,30,22,7);
 
-    Order order = GetEscaperOrder(first_escaper,COMPUTER_SCIENCE,7);
+    Order order = GetEscaperOrder(first_escaper,CHEMISTRY,7);
     ASSERT_TEST(GetRemainingHours(order)==19);
     ASSERT_TEST(GetRemainingDays(order)==10);
     ASSERT_TEST(GetNumOfPeople(order)==3);
@@ -220,48 +220,44 @@ static bool testOrderFinders(){
     RemoveDestroyOrder(first_escaper,order);
 
     ASSERT_TEST(GetEscaperOrder(first_escaper,COMPUTER_SCIENCE,7)==NULL);
-    order = CreateOrder("hanzamzim12^7*@wallak",COMPUTER_SCIENCE,7,10,19,3,&error_code);
+    order = CreateOrder("hanzamzim12^7*@wallak",CHEMISTRY,7,10,19,3,&error_code);
     ASSERT_TEST(EscaperHasOrder(first_escaper,order)==0);
     DestroyOrder(order);
     Order order2 = CreateOrder("hanzamzim12^7*@wallak",ELECTRICAL_ENGINEERING,7,10,19,3,&error_code);
     ASSERT_TEST(EscaperHasOrder(first_escaper,order2)==0);
     DestroyOrder(order2);
     DestroyEscaper(first_escaper);
-
     return true;
 }
-
 
 static bool testDecreaseDays(){
     MtmErrorCode error_code=MTM_SUCCESS;
     Escaper first_escaper =CreateEscaper("hanzamzim12^7*@wallak",COMPUTER_SCIENCE,8,&error_code);
-    CreateInsertOrderFirst(first_escaper,7,10,19,3);
-    CreateInsertOrderFirst(first_escaper,2,3,6,2);
-    CreateInsertOrderFirst(first_escaper,1,7,10,5);
-    CreateInsertOrderFirst(first_escaper,8,1,1,4);
-    CreateInsertOrderFirst(first_escaper,20,30,22,7);
+    CreateInsertOrderFirst(first_escaper,CHEMISTRY,7,10,19,3);
+    CreateInsertOrderLast(first_escaper,CHEMISTRY,2,3,6,2);
+    CreateInsertOrderLast(first_escaper,CHEMISTRY,1,7,10,5);
+    CreateInsertOrderLast(first_escaper,CHEMISTRY,20,30,22,7);
 
     error_code=DecreaseOrdersDay(first_escaper);
     ASSERT_TEST(error_code==MTM_SUCCESS);
-    Order order1 = GetEscaperOrder(first_escaper,COMPUTER_SCIENCE,7);
-    Order order2 = GetEscaperOrder(first_escaper,COMPUTER_SCIENCE,2);
-    Order order3 = GetEscaperOrder(first_escaper,COMPUTER_SCIENCE,1);
-    Order order4 = GetEscaperOrder(first_escaper,COMPUTER_SCIENCE,8);
-    Order order5 = GetEscaperOrder(first_escaper,COMPUTER_SCIENCE,20);
+    Order order1 = GetEscaperOrder(first_escaper,CHEMISTRY,7);
+    Order order2 = GetEscaperOrder(first_escaper,CHEMISTRY,2);
+    Order order3 = GetEscaperOrder(first_escaper,CHEMISTRY,1);
+    Order order5 = GetEscaperOrder(first_escaper,CHEMISTRY,20);
 
     ASSERT_TEST(GetRemainingDays(order1)==9);
     ASSERT_TEST(GetRemainingDays(order2)==2);
     ASSERT_TEST(GetRemainingDays(order3)==6);
-    ASSERT_TEST(GetRemainingDays(order4)==0);
     ASSERT_TEST(GetRemainingDays(order5)==29);
 
     error_code=DecreaseOrdersDay(first_escaper);
-    ASSERT_TEST(error_code==MTM_INVALID_PARAMETER);
-    ASSERT_TEST(GetRemainingDays(order1)==9);
-    ASSERT_TEST(GetRemainingDays(order2)==2);
-    ASSERT_TEST(GetRemainingDays(order3)==6);
-    ASSERT_TEST(GetRemainingDays(order4)==0);
-    ASSERT_TEST(GetRemainingDays(order5)==29);
+    ASSERT_TEST(error_code==MTM_SUCCESS);
+    ASSERT_TEST(GetRemainingDays(order1)==8);
+    ASSERT_TEST(GetRemainingDays(order2)==1);
+    ASSERT_TEST(GetRemainingDays(order3)==5);
+    ASSERT_TEST(GetRemainingDays(order5)==28);
+
+    DestroyEscaper(first_escaper);
 
     return true;
 }
@@ -293,7 +289,7 @@ static bool testGetSkillLevel() {
 
 
 
-int EscaperTests (int argv, char** arc){
+int EacapeTests (int argv, char** arc){
     RUN_TEST(testEscaperCreate);
     RUN_TEST(testEscaperDestroy);
     RUN_TEST(testCreateInsertOrder);

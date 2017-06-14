@@ -125,36 +125,6 @@ static bool testSearchRoom(){
     return true;
 }
 
-static bool testUpdateCompanyIncome(){
-
-    MtmErrorCode error_code1=MTM_SUCCESS;
-    Company first_company = CreateCompany("goornish@gmail,om",MATHEMATICS,&error_code1);
-    CreateInsertRoom(first_company,1,20,4,4,7,22);
-    CreateInsertRoom(first_company,5,32,2,2,6,19);
-    CreateInsertRoom(first_company,4,12,5,7,7,1);
-    Order order1= CreateOrder("golan@gmail.com",MATHEMATICS,4,0,6,5,&error_code1);
-    Order order2= CreateOrder("avihu@gmail.com",ARCHITECTURE,5,0,8,5,&error_code1);
-    Order order3= CreateOrder("NOBODY@",CHEMISTRY,1,2,4,4,&error_code1);
-    Order order4 =CreateOrder("Changcho@",MATHEMATICS,3,0,2,3,&error_code1);
-    error_code1 = UpdateCompanyIncome(first_company,NULL);
-    ASSERT_TEST(error_code1==MTM_NULL_PARAMETER);
-    error_code1=UpdateCompanyIncome(first_company,order1);
-    ASSERT_TEST(error_code1==MTM_SUCCESS);
-    error_code1=UpdateCompanyIncome(first_company,order2);
-    ASSERT_TEST(error_code1==MTM_SUCCESS);
-    error_code1=UpdateCompanyIncome(first_company,order3);
-    ASSERT_TEST(error_code1==MTM_SUCCESS);
-    error_code1=UpdateCompanyIncome(first_company,order4);
-    ASSERT_TEST(error_code1==MTM_NO_ROOMS_AVAILABLE);
-    ASSERT_TEST(GetCompanyIncome(first_company)==41);
-    DestroyOrder(order1);
-    DestroyOrder(order2);
-    DestroyOrder(order3);
-    DestroyOrder(order4);
-    DestroyCompany(first_company);
-    return true;
-}
-
 static bool testGetCompanyFaculty(){
     MtmErrorCode error_code = MTM_SUCCESS;
     Company first_company = CreateCompany("goornish@gmail,om",HUMANITIES_AND_ARTS,&error_code);
@@ -178,7 +148,6 @@ int CompanyTests (int argv, char** arc){
     RUN_TEST(testRemoveDestroyRoom);
     RUN_TEST(testClearCompanyRooms);
     RUN_TEST(testSearchRoom);
-    RUN_TEST(testUpdateCompanyIncome);
     RUN_TEST(testGetCompanyFaculty);
     RUN_TEST(testGetCompanyEmail);
     return 0;

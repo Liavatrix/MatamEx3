@@ -11,6 +11,7 @@
 #include "Order.h"
 #include "mtm_ex3.h"
 #include "list.h"
+#include "set.h"
 
 
 typedef struct  escEscapeTechnion* System;
@@ -21,11 +22,13 @@ void DestroySystem(System system);
 
 List GetCompanyList(System  system);
 
+Set GetEscapersSet(System system);
+
 MtmErrorCode CompanyAdd(System  system, char* email, TechnionFaculty faculty);
 
-MtmErrorCode CompanyRemove(System  system,Company company);
+MtmErrorCode CompanyRemove(System  system,char* email);
 
-MtmErrorCode RoomAdd(System  system,char* email, int id, int price, int num_ppl, int difficulty,int start_time, int end_time);
+MtmErrorCode RoomAdd(System  system,char* email, int id, int price, int num_ppl,int start_time, int end_time, int difficulty);
 
 MtmErrorCode RoomRemove(System  system,TechnionFaculty faculty, int id);
 
@@ -35,20 +38,19 @@ MtmErrorCode EscaperAdd(System system,char* email, TechnionFaculty faculty, int 
 
 MtmErrorCode EscaperRemove(System  system,char* email);
 
-//MtmErrorCode EscaperOrder (System  system,char* email, TechnionFaculty faculty, int id ,char* time ,int num_ppl);
-//
-//MtmErrorCode EscaperRecommend(System  system,char* email, int num_ppl);
-//
-//MtmErrorCode ReportDay();
-//
-//MtmErrorCode ReportBest();
+MtmErrorCode EscaperOrder (System  system,char* email, TechnionFaculty faculty, int id ,int day,int hour ,int num_ppl);
+
+MtmErrorCode EscaperRecommend(System  system,char* email, int num_ppl);
+
+MtmErrorCode ReportDay(System system, FILE* file);
+
+MtmErrorCode ReportBest(System system, FILE* file);
 
 //static MtmErrorCode SearchForEscaper(char* email);
 //
-//static MtmErrorCode SearchForRoom(TechnionFaculty faculty, int room_id);
-//
-//static MtmErrorCode SearchForOrder(TechnionFaculty faculty, int room_id);
-//
+//static MtmErrorCode RoomContainer(TechnionFaculty faculty, int room_id);
+
+
 int GetNumberOfCompanies(System system);
 //
 //static int GetNumberOfEscapers(System system);

@@ -8,6 +8,7 @@
 #include "Room.h"
 #include "mtm_ex3.h"
 #include "Order.h"
+#include "set.h"
 
 
 typedef struct escCompany* Company;
@@ -29,6 +30,8 @@ typedef struct escCompany* Company;
  * 	MTM_EMAIL_ALREADY_EXISTS if email is already used by another entity.
 * 	A new Company in case of success.
 */
+
+Set GetCompanyRooms(Company company);
 
 Company CreateCompany(char* email, TechnionFaculty faculty,MtmErrorCode* error_code);
 
@@ -55,7 +58,7 @@ int GetCompanyIncome(Company company);
 
 int GetNumRooms(Company company);
 
-MtmErrorCode UpdateCompanyIncome(Company company , Order order);
+void UpdateCompanyIncome(Company company , int price);
 
 TechnionFaculty GetCompanyFaculty(Company company);
 

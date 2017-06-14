@@ -15,7 +15,6 @@ static bool testInitialiseSystem(){
     return true;
 }
 
-
 static bool testDestroySystem(){
 
     System system1= InitiateSystem();
@@ -64,7 +63,6 @@ static bool testCompanyAdd(){
     return true;
 }
 
-
 static bool testCompanyRemove(){
     MtmErrorCode error_code=MTM_SUCCESS;
 
@@ -93,187 +91,341 @@ static bool testCompanyRemove(){
     DestroySystem(second_System);
     DestroySystem(third_System);
     return true;
-
-}
-
-/*
-static bool testRemoveDestroyEscaper(){
-
-    MtmErrorCode error_code1=MTM_SUCCESS;
-    MtmErrorCode error_code2=MTM_SUCCESS;
-    MtmErrorCode error_code3=MTM_SUCCESS;
-    Escaper first_escaper = CreateEscaper("hanzamzim12^7*@wallak",COMPUTER_SCIENCE,8,&error_code1);
-    error_code1=CreateInsertOrderFirst(first_escaper,1,20,4,4);
-    GetFirstOrder(first_escaper);
-    error_code2=CreateInsertOrderAfterCurrent(first_escaper,5,32,2,6);
-    error_code3=CreateInsertOrderLast(first_escaper,4,12,5,7);
-    ASSERT_TEST(error_code1==MTM_SUCCESS && error_code2 ==MTM_SUCCESS && error_code3==MTM_SUCCESS);
-    ASSERT_TEST(GetNumOrders(first_escaper)==3);
-    GetFirstOrder(first_escaper);
-    Order order = GetNextOrder(first_escaper);
-
-    error_code1= RemoveDestroyOrder(first_escaper,order);
-    order = GetFirstOrder(first_escaper);
-    ASSERT_TEST(error_code1==MTM_SUCCESS);
-    ASSERT_TEST(GetNumOrders(first_escaper)==2);
-    ASSERT_TEST(GetID(order)==1);
-    order = GetNextOrder(first_escaper);
-    ASSERT_TEST(GetID(order)==4);
-
-    error_code1= RemoveDestroyOrder(first_escaper,order);
-    order = GetFirstOrder(first_escaper);
-    ASSERT_TEST(error_code1==MTM_SUCCESS);
-    ASSERT_TEST(GetNumOrders(first_escaper)==1);
-    ASSERT_TEST(GetID(order)==1);
-
-    error_code1=RemoveDestroyOrder(first_escaper,NULL);
-    ASSERT_TEST(error_code1==MTM_NULL_PARAMETER);
-    order = CreateOrder("@avi",MEDICINE,7,24,6,9,&error_code2);
-    ASSERT_TEST(error_code2==MTM_SUCCESS);
-    error_code1=RemoveDestroyOrder(first_escaper,order);
-    DestroyOrder(order);
-    DestroyEscaper(first_escaper);
-    ASSERT_TEST(error_code1==MTM_ID_DOES_NOT_EXIST);
-
     return true;
 }
 
-static bool testClearEscaperOrders(){
+static bool testRoomAdd(){
 
-    MtmErrorCode error_code1=MTM_SUCCESS;
-    Escaper first_escaper = CreateEscaper("hanzamzim12^7*@wallak",COMPUTER_SCIENCE,8,&error_code1);
-    CreateInsertOrderFirst(first_escaper,1,20,4,4);
-    CreateInsertOrderLast(first_escaper,5,32,2,2);
-    CreateInsertOrderLast(first_escaper,4,12,5,7);
-    ClearEscaperOrders(first_escaper);
-    ASSERT_TEST(GetNumOrders(first_escaper)==0);
-    ASSERT_TEST(GetFirstOrder(first_escaper)==NULL);
-    DestroyEscaper(first_escaper);
-    return true;
-}
-
-static bool testsSortOrders(){
     MtmErrorCode error_code=MTM_SUCCESS;
-    Escaper first_escaper =CreateEscaper("hanzamzim12^7*@wallak",COMPUTER_SCIENCE,8,&error_code);
-    CreateInsertOrderFirst(first_escaper,7,10,19,3);
-    CreateInsertOrderFirst(first_escaper,2,3,6,2);
-    CreateInsertOrderFirst(first_escaper,1,7,10,5);
-    CreateInsertOrderFirst(first_escaper,8,2,1,4);
-    CreateInsertOrderFirst(first_escaper,20,30,22,7);
-    error_code=SortOrders(first_escaper);
-    ASSERT_TEST(GetID(GetFirstOrder(first_escaper))==1);
-    ASSERT_TEST(GetID(GetNextOrder(first_escaper))==2);
-    ASSERT_TEST(GetID(GetNextOrder(first_escaper))==7);
-    ASSERT_TEST(GetID(GetNextOrder(first_escaper))==8);
-    ASSERT_TEST(GetID(GetNextOrder(first_escaper))==20);
-    DestroyEscaper(first_escaper);
-    return true;
-}
+    System system = InitiateSystem();
+    CompanyAdd(system,"Liav@gma",COMPUTER_SCIENCE);
+    CompanyAdd(system,"jgnjsd@",ELECTRICAL_ENGINEERING);
+    CompanyAdd(system,"harab@shtaal",ELECTRICAL_ENGINEERING);
+    CompanyAdd(system,"tsu@berbooler",BIOMEDICAL_ENGINEERING);
 
-static bool testOrderFinders(){
-    MtmErrorCode error_code=MTM_SUCCESS;
-    Escaper first_escaper =CreateEscaper("hanzamzim12^7*@wallak",COMPUTER_SCIENCE,8,&error_code);
-    CreateInsertOrderFirst(first_escaper,7,10,19,3);
-    CreateInsertOrderFirst(first_escaper,2,3,6,2);
-    CreateInsertOrderFirst(first_escaper,1,7,10,5);
-    CreateInsertOrderFirst(first_escaper,8,2,1,4);
-    CreateInsertOrderFirst(first_escaper,20,30,22,7);
-
-    Order order = GetEscaperOrder(first_escaper,COMPUTER_SCIENCE,7);
-    ASSERT_TEST(GetRemainingHours(order)==19);
-    ASSERT_TEST(GetRemainingDays(order)==10);
-    ASSERT_TEST(GetNumOfPeople(order)==3);
-    ASSERT_TEST(EscaperHasOrder(first_escaper,order)==1);
-    ASSERT_TEST(EscaperHasOrder(first_escaper,NULL)==-1);
-    RemoveDestroyOrder(first_escaper,order);
-
-    ASSERT_TEST(GetEscaperOrder(first_escaper,COMPUTER_SCIENCE,7)==NULL);
-    order = CreateOrder("hanzamzim12^7*@wallak",COMPUTER_SCIENCE,7,10,19,3,&error_code);
-    ASSERT_TEST(EscaperHasOrder(first_escaper,order)==0);
-    DestroyOrder(order);
-    Order order2 = CreateOrder("hanzamzim12^7*@wallak",ELECTRICAL_ENGINEERING,7,10,19,3,&error_code);
-    ASSERT_TEST(EscaperHasOrder(first_escaper,order2)==0);
-    DestroyOrder(order2);
-    DestroyEscaper(first_escaper);
-
-    return true;
-}
-
-static bool testDecreaseDays(){
-    MtmErrorCode error_code=MTM_SUCCESS;
-    Escaper first_escaper =CreateEscaper("hanzamzim12^7*@wallak",COMPUTER_SCIENCE,8,&error_code);
-    CreateInsertOrderFirst(first_escaper,7,10,19,3);
-    CreateInsertOrderFirst(first_escaper,2,3,6,2);
-    CreateInsertOrderFirst(first_escaper,1,7,10,5);
-    CreateInsertOrderFirst(first_escaper,8,1,1,4);
-    CreateInsertOrderFirst(first_escaper,20,30,22,7);
-
-    error_code=DecreaseOrdersDay(first_escaper);
+    error_code=RoomAdd(system,"Liav@gma",3,16,5,2,18,7);
     ASSERT_TEST(error_code==MTM_SUCCESS);
-    Order order1 = GetEscaperOrder(first_escaper,COMPUTER_SCIENCE,7);
-    Order order2 = GetEscaperOrder(first_escaper,COMPUTER_SCIENCE,2);
-    Order order3 = GetEscaperOrder(first_escaper,COMPUTER_SCIENCE,1);
-    Order order4 = GetEscaperOrder(first_escaper,COMPUTER_SCIENCE,8);
-    Order order5 = GetEscaperOrder(first_escaper,COMPUTER_SCIENCE,20);
-
-    ASSERT_TEST(GetRemainingDays(order1)==9);
-    ASSERT_TEST(GetRemainingDays(order2)==2);
-    ASSERT_TEST(GetRemainingDays(order3)==6);
-    ASSERT_TEST(GetRemainingDays(order4)==0);
-    ASSERT_TEST(GetRemainingDays(order5)==29);
-
-    error_code=DecreaseOrdersDay(first_escaper);
+    error_code=RoomAdd(system,"Liav@gma",5,32,3,1,20,2);
+    ASSERT_TEST(error_code==MTM_SUCCESS);
+    error_code=RoomAdd(system,"jgnjsd@",3,16,5,2,18,7);
+    ASSERT_TEST(error_code==MTM_SUCCESS);
+    error_code=RoomAdd(system,"harab@shtaal",7,20,5,12,1,4);
+    ASSERT_TEST(error_code==MTM_SUCCESS);
+    error_code=RoomAdd(system,"jgnjsd@",2,5,7,14,16,8);
     ASSERT_TEST(error_code==MTM_INVALID_PARAMETER);
-    ASSERT_TEST(GetRemainingDays(order1)==9);
-    ASSERT_TEST(GetRemainingDays(order2)==2);
-    ASSERT_TEST(GetRemainingDays(order3)==6);
-    ASSERT_TEST(GetRemainingDays(order4)==0);
-    ASSERT_TEST(GetRemainingDays(order5)==29);
+    error_code=RoomAdd(system,"gangam@style",4,12,3,4,17,4);
+    ASSERT_TEST(error_code==MTM_COMPANY_EMAIL_DOES_NOT_EXIST);
+    error_code=RoomAdd(system,"harab@shtaal",3,24,7,6,18,10);
+    ASSERT_TEST(error_code==MTM_ID_ALREADY_EXIST);
+    error_code=RoomAdd(system,"tsu@berbooler",3,8,5,2,18,7);
+    ASSERT_TEST(error_code==MTM_SUCCESS);
 
-    DestroyEscaper(first_escaper);
+    DestroySystem(system);
+
     return true;
 }
 
-static bool testGetEscaperFaculty(){
+static bool testRoomRemove(){
+
     MtmErrorCode error_code=MTM_SUCCESS;
-    Escaper first_escaper =CreateEscaper("hanzamzim12^7*@wallak",COMPUTER_SCIENCE,8,&error_code);
-    ASSERT_TEST(GetEscaperFaculty(first_escaper)==COMPUTER_SCIENCE);
-    DestroyEscaper(first_escaper);
+    System system = InitiateSystem();
+    CompanyAdd(system,"Liav@gma",COMPUTER_SCIENCE);
+    CompanyAdd(system,"jgnjsd@",ELECTRICAL_ENGINEERING);
+    CompanyAdd(system,"harab@shtaal",ELECTRICAL_ENGINEERING);
+    CompanyAdd(system,"tsu@berbooler",BIOMEDICAL_ENGINEERING);
+
+    RoomAdd(system,"Liav@gma",3,16,5,2,18,7);
+    RoomAdd(system,"Liav@gma",5,32,3,1,20,2);
+    RoomAdd(system,"jgnjsd@",3,16,5,2,18,7);
+    RoomAdd(system,"harab@shtaal",7,20,5,12,1,4);
+    RoomAdd(system,"tsu@berbooler",3,8,5,2,18,7);
+
+    Company company = RoomContainer(ELECTRICAL_ENGINEERING,3,GetCompanyList(system));
+    Room room = SearchRoom(company,3);
+    ASSERT_TEST(room!=NULL);
+    error_code=RoomRemove(system,ELECTRICAL_ENGINEERING,3);
+    room = SearchRoom(company,3);
+    ASSERT_TEST(room==NULL);
+    ASSERT_TEST(error_code==MTM_SUCCESS);
+    error_code=RoomRemove(system,ELECTRICAL_ENGINEERING,3);
+    ASSERT_TEST(error_code==MTM_ID_DOES_NOT_EXIST);
+    company = RoomContainer(COMPUTER_SCIENCE,3,GetCompanyList(system));
+    room = SearchRoom(company,3);
+    ASSERT_TEST(room!=NULL);
+    error_code=RoomRemove(system,COMPUTER_SCIENCE,3);
+    room = SearchRoom(company,3);
+    ASSERT_TEST(room==NULL);
+    ASSERT_TEST(error_code==MTM_SUCCESS);
+    DestroySystem(system);
+
     return true;
 }
 
-static bool testGetEscaperEmail(){
-    MtmErrorCode error_code=MTM_SUCCESS;
-    Escaper first_escaper =CreateEscaper("hanzamzim12^7*@wallak",COMPUTER_SCIENCE,8,&error_code);
-    ASSERT_TEST(strcmp(GetEscaperEmail(first_escaper),"hanzamzim12^7*@wallak")==0);
-    DestroyEscaper(first_escaper);
+static bool testEscaperAdd(){
+    System  system = InitiateSystem();
+    assert(system!=NULL);
+    MtmErrorCode err=EscaperAdd(system,"liav@gmail",COMPUTER_SCIENCE,4);
+    MtmErrorCode err2=EscaperAdd(system,"bob@gmail",COMPUTER_SCIENCE,7);
+    MtmErrorCode err3=EscaperAdd(system,"moti@gmail",COMPUTER_SCIENCE,8);
+    MtmErrorCode err4=EscaperAdd(system,"shlomo@gmail",COMPUTER_SCIENCE,9);
+    MtmErrorCode err5=EscaperAdd(system,"david@gmail",COMPUTER_SCIENCE,1);
+
+    ASSERT_TEST(err==MTM_SUCCESS);
+    ASSERT_TEST(err2==MTM_SUCCESS);
+    ASSERT_TEST(err3==MTM_SUCCESS);
+    ASSERT_TEST(err4==MTM_SUCCESS);
+    ASSERT_TEST(err5==MTM_SUCCESS);
+
+    DestroySystem(system);
     return true;
 }
 
-static bool testGetSkillLevel() {
-    MtmErrorCode error_code=MTM_SUCCESS;
-    Escaper first_escaper =CreateEscaper("hanzamzim12^7*@wallak",COMPUTER_SCIENCE,8,&error_code);
-    ASSERT_TEST(GetSkillLevel(first_escaper)==8);
-    DestroyEscaper(first_escaper);
+static bool testEscaperRemove(){
+    System  system = InitiateSystem();
+    assert(system!=NULL);
+    MtmErrorCode err=EscaperAdd(system,"liav@gmail",COMPUTER_SCIENCE,4);
+    MtmErrorCode err2=EscaperAdd(system,"bob@gmail",MEDICINE,7);
+    MtmErrorCode err3=EscaperAdd(system,"moti@gmail",CIVIL_ENGINEERING,8);
+    MtmErrorCode err4=EscaperAdd(system,"shlomo@gmail",AEROSPACE_ENGINEERING,9);
+    MtmErrorCode err5=EscaperAdd(system,"david@gmail",INDUSTRIAL_ENGINEERING_AND_MANAGEMENT,9);
+    MtmErrorCode err6=EscaperAdd(system,"bob@gmail",MEDICINE,7);
+    MtmErrorCode err7=EscaperAdd(system,"shlomo@gmail",MEDICINE,7);
+    MtmErrorCode err8=EscaperAdd(system,"or@gmail",MEDICINE,7);
+    MtmErrorCode err9=EscaperAdd(system,"erez@gmail",MEDICINE,7);
+    MtmErrorCode err10=EscaperAdd(system,"barak@gmail",MEDICINE,7);
+
+    ASSERT_TEST(err==MTM_SUCCESS);
+    ASSERT_TEST(err2==MTM_SUCCESS);
+    ASSERT_TEST(err3==MTM_SUCCESS);
+    ASSERT_TEST(err4==MTM_SUCCESS);
+    ASSERT_TEST(err5==MTM_SUCCESS);
+    ASSERT_TEST(err6==MTM_EMAIL_ALREADY_EXISTS);
+    ASSERT_TEST(err7==MTM_EMAIL_ALREADY_EXISTS);
+    ASSERT_TEST(err8==MTM_SUCCESS);
+    ASSERT_TEST(err9==MTM_SUCCESS);
+    ASSERT_TEST(err10==MTM_SUCCESS);
+
+    err=EscaperRemove(system,"liav@gmail");
+    err2=EscaperRemove(system,"bob@gmail");
+    err3=EscaperRemove(system,"moti@gmail");
+    err4=EscaperRemove(system,"shlomo@gmail");
+    err5=EscaperRemove(system,"david@gmail");
+    err6=EscaperRemove(system,"bob@gmail");
+    err7=EscaperRemove(system,"shlomo@gmail");
+    err8=EscaperRemove(system,"or@gmail");
+    err9=EscaperRemove(system,"erez@gmail");
+    err10=EscaperRemove(system,"barak@gmail");
+
+    ASSERT_TEST(err==MTM_SUCCESS);
+    ASSERT_TEST(err2==MTM_SUCCESS);
+    ASSERT_TEST(err3==MTM_SUCCESS);
+    ASSERT_TEST(err4==MTM_SUCCESS);
+    ASSERT_TEST(err5==MTM_SUCCESS);
+    ASSERT_TEST(err6==MTM_CLIENT_EMAIL_DOES_NOT_EXIST);
+    ASSERT_TEST(err7==MTM_CLIENT_EMAIL_DOES_NOT_EXIST);
+    ASSERT_TEST(err8==MTM_SUCCESS);
+    ASSERT_TEST(err9==MTM_SUCCESS);
+    ASSERT_TEST(err10==MTM_SUCCESS);
+    DestroySystem(system);
     return true;
 }
 
-*/
+static bool testsEscaperOrder(){
+    System  system = InitiateSystem();
+    assert(system!=NULL);
+    CompanyAdd(system,"MARVEL@",PHYSICS);
+    MtmErrorCode err=EscaperAdd(system,"liav@gmail",COMPUTER_SCIENCE,4);
+    EscaperAdd(system,"dfksdk@",MEDICINE,5);
+    RoomAdd(system,"MARVEL@",22,64,3,2,16,4);
+    RoomAdd(system,"DC@",13,64,3,2,16,4);
+    RoomAdd(system,"MARVEL@",9,40,3,5,8,4); //Time
+    err=EscaperOrder(system,"liav@gmail",PHYSICS,22,2,4,2);
+    ASSERT_TEST(err==MTM_SUCCESS);
+    ASSERT_TEST(setGetFirst(GetEscapersSet(system))!=NULL);
+    err=EscaperOrder(system,"dfksdk@",PHYSICS,22,2,4,2);
+    ASSERT_TEST(err==MTM_RESERVATION_EXISTS);
+    err=EscaperOrder(system,"li@gmail",PHYSICS,22,3,7,4);
+    ASSERT_TEST(err==MTM_CLIENT_EMAIL_DOES_NOT_EXIST);
+    err=EscaperOrder(system,"liav@gmail",PHYSICS,13,2,4,3);
+    ASSERT_TEST(err==MTM_CLIENT_IN_ROOM);
+    err=EscaperOrder(system,"liav@gmail",PHYSICS,9,5,2,3);
+    ASSERT_TEST(err==MTM_ROOM_NOT_AVAILABLE);
+    DestroySystem(system);
+    return true;
+}
+
+static bool testEscaperRecommend(){
+    MtmErrorCode error;
+    System  system = InitiateSystem();
+    assert(system!=NULL);
+    CompanyAdd(system,"MARVEL@",PHYSICS);
+    EscaperAdd(system,"liav@gmail",COMPUTER_SCIENCE,4);
+    EscaperAdd(system,"dfksdk@",MEDICINE,5);
+    RoomAdd(system,"MARVEL@",22,64,3,2,16,4);
+    RoomAdd(system,"DC@",13,64,3,2,16,4);
+    RoomAdd(system,"MARVEL@",9,40,3,5,16,5); //Time
+
+    error=EscaperOrder(system,"liav@gmail",PHYSICS,22,0,2,2);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=EscaperOrder(system,"liav@gmail",PHYSICS,22,0,3,6);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=EscaperOrder(system,"liav@gmail",PHYSICS,22,0,5,2);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=EscaperOrder(system,"liav@gmail",PHYSICS,22,0,6,2);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=EscaperRecommend(system,"liav@gmail",2);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=EscaperOrder(system,"dfksdk@",PHYSICS,22,0,4,5);
+    ASSERT_TEST(error==MTM_RESERVATION_EXISTS);
+    DestroySystem(system);
+    return true;
+
+}
+
+static bool testsReportDay(){
+    MtmErrorCode error=MTM_SUCCESS;
+
+    System  system = InitiateSystem();
+    assert(system!=NULL);
+
+    error=CompanyAdd(system,"MARVEL@",PHYSICS);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=CompanyAdd(system,"DC@",HUMANITIES_AND_ARTS);
+    ASSERT_TEST(error==MTM_SUCCESS);
+
+    error=EscaperAdd(system,"liav@gmail",COMPUTER_SCIENCE,4);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=EscaperAdd(system,"or@",MEDICINE,5);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=EscaperAdd(system,"Moshe@",HUMANITIES_AND_ARTS,8);
+    ASSERT_TEST(error==MTM_SUCCESS);
+
+    error=RoomAdd(system,"MARVEL@",22,64,3,2,16,4);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=RoomAdd(system,"MARVEL@",12,48,7,4,20,6);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=RoomAdd(system,"MARVEL@",9,40,3,5,16,5);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=RoomAdd(system,"DC@",9,28,8,0,23,10);
+    ASSERT_TEST(error==MTM_SUCCESS);
+
+    error=EscaperOrder(system,"liav@gmail",PHYSICS,22,0,2,2);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=EscaperOrder(system,"liav@gmail",PHYSICS,22,1,3,6);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=EscaperOrder(system,"liav@gmail",PHYSICS,9,0,5,2);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=EscaperOrder(system,"liav@gmail",PHYSICS,22,1,6,2);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=EscaperOrder(system,"or@",PHYSICS,12,0,5,3);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=EscaperOrder(system,"or@",PHYSICS,9,15,5,5);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=EscaperOrder(system,"Moshe@",HUMANITIES_AND_ARTS,9,0,5,9);
+    ASSERT_TEST(error==MTM_SUCCESS);
+
+    error=ReportDay(system,stdout);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    DestroySystem(system);
+    return true;
+}
+
+static bool testsReportBest(){
+    MtmErrorCode error=MTM_SUCCESS;
+
+    System  system = InitiateSystem();
+    assert(system!=NULL);
+
+    error=CompanyAdd(system,"MARVEL@",PHYSICS);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=CompanyAdd(system,"DC@",HUMANITIES_AND_ARTS);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=CompanyAdd(system,"MARCHIM@",ELECTRICAL_ENGINEERING);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=CompanyAdd(system,"GROOT@",BIOLOGY);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=CompanyAdd(system,"METABOL@",MATHEMATICS);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=CompanyAdd(system,"Con@Spiracy",COMPUTER_SCIENCE);
+    ASSERT_TEST(error==MTM_SUCCESS);
+
+    error=EscaperAdd(system,"liav@gmail",COMPUTER_SCIENCE,4);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=EscaperAdd(system,"or@",MEDICINE,5);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=EscaperAdd(system,"Moshe@",HUMANITIES_AND_ARTS,8);
+    ASSERT_TEST(error==MTM_SUCCESS);
+
+    error=RoomAdd(system,"MARVEL@",22,64,3,2,16,4);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=RoomAdd(system,"MARVEL@",12,48,7,4,20,6);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=RoomAdd(system,"MARVEL@",9,40,3,5,16,5);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=RoomAdd(system,"DC@",9,28,8,0,23,10);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=RoomAdd(system,"GROOT@",14,100,2,7,24,3);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=RoomAdd(system,"GROOT@",17,200,4,5,18,7);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=RoomAdd(system,"METABOL@",5,84,1,3,21,1);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=RoomAdd(system,"Con@Spiracy",30,400,5,2,23,10);
+    ASSERT_TEST(error==MTM_SUCCESS);
 
 
-int Tests (int argv, char** arc){
+    error=EscaperOrder(system,"liav@gmail",PHYSICS,22,3,2,2);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=EscaperOrder(system,"liav@gmail",PHYSICS,22,1,3,6);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=EscaperOrder(system,"liav@gmail",PHYSICS,9,0,5,2);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=EscaperOrder(system,"liav@gmail",PHYSICS,22,3,6,2);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=EscaperOrder(system,"or@",PHYSICS,12,0,5,3);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=EscaperOrder(system,"or@",PHYSICS,9,15,5,5);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=EscaperOrder(system,"or@",PHYSICS,12,1,5,3);
+    ASSERT_TEST(error==MTM_SUCCESS);
+
+    error=EscaperOrder(system,"or@",HUMANITIES_AND_ARTS,9,2,5,5);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=EscaperOrder(system,"Moshe@",HUMANITIES_AND_ARTS,9,0,5,9);
+    ASSERT_TEST(error==MTM_SUCCESS);
+
+    error=EscaperOrder(system,"Moshe@",COMPUTER_SCIENCE,30,1,7,2);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=EscaperOrder(system,"or@",COMPUTER_SCIENCE,30,1,8,5);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=EscaperOrder(system,"liav@gmail",COMPUTER_SCIENCE,30,0,22,4);
+    ASSERT_TEST(error==MTM_SUCCESS);
+
+    error=ReportDay(system,stdout);
+    ASSERT_TEST(error==MTM_SUCCESS);
+    error=ReportDay(system,stdout);
+    ASSERT_TEST(error==MTM_SUCCESS);
+
+    error=ReportBest(system,stdout);
+    ASSERT_TEST(error==MTM_SUCCESS);
+
+    DestroySystem(system);
+    return true;
+}
+
+
+int TestsEscape (int argv, char** arc){
     RUN_TEST(testInitialiseSystem);
     RUN_TEST(testDestroySystem);
     RUN_TEST(testCompanyAdd);
     RUN_TEST(testCompanyRemove);
-
-
-//    RUN_TEST(testClearEscaperOrders);
-//    RUN_TEST(testsSortOrders);
-//    RUN_TEST(testOrderFinders);
-//    RUN_TEST(testGetSkillLevel);
-//    RUN_TEST(testGetEscaperFaculty);
-//    RUN_TEST(testGetEscaperEmail);
-//    RUN_TEST(testDecreaseDays);
+    RUN_TEST(testRoomAdd);
+    RUN_TEST(testRoomRemove)
+    RUN_TEST(testEscaperAdd);
+    RUN_TEST(testEscaperRemove);
+    RUN_TEST(testsEscaperOrder);
+    RUN_TEST(testEscaperRecommend);
+    RUN_TEST(testsReportDay);
+    RUN_TEST(testsReportBest);
     return 0;
 }

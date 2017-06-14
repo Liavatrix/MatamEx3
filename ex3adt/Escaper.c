@@ -13,7 +13,7 @@ struct escEscaper {
 
 typedef void* listElement;
 
-inline static int EmailIsValid(char* email) {
+static int EmailIsValid(char* email) {
     int count=0;
     for (int i = 0; i < strlen(email); ++i) {
         if(email[i]=='@')
@@ -117,12 +117,12 @@ Escaper CopyEscaper(Escaper escaper, MtmErrorCode* error_code) {
     return new_escaper;
 }
 
-MtmErrorCode CreateInsertOrderFirst(Escaper escaper,int id, int day, int hour, int num_ppl) {
+MtmErrorCode CreateInsertOrderFirst(Escaper escaper,TechnionFaculty faculty,int id, int day, int hour, int num_ppl) {
     assert(escaper!=NULL);
     if(!ValidateParameters(id,day,hour,num_ppl))
         return MTM_INVALID_PARAMETER;
     MtmErrorCode error_code;
-    Order order = CreateOrder(escaper->email,escaper->faculty,id,day,hour,num_ppl,&error_code);
+    Order order = CreateOrder(escaper->email,faculty,id,day,hour,num_ppl,&error_code);
     if(error_code!=MTM_SUCCESS)
         return error_code;
     ListResult list_result = listInsertFirst(escaper->orders,order);
@@ -134,12 +134,12 @@ MtmErrorCode CreateInsertOrderFirst(Escaper escaper,int id, int day, int hour, i
     return MTM_SUCCESS;
 }
 
-MtmErrorCode CreateInsertOrderLast(Escaper escaper,int id, int day, int hour, int num_ppl) {
+MtmErrorCode CreateInsertOrderLast(Escaper escaper,TechnionFaculty faculty,int id, int day, int hour, int num_ppl) {
     assert(escaper!=NULL);
     if(!ValidateParameters(id,day,hour,num_ppl))
         return MTM_INVALID_PARAMETER;
     MtmErrorCode error_code;
-    Order order = CreateOrder(escaper->email,escaper->faculty,id,day,hour,num_ppl,&error_code);
+    Order order = CreateOrder(escaper->email,faculty,id,day,hour,num_ppl,&error_code);
     if(error_code!=MTM_SUCCESS)
         return error_code;
     ListResult list_result = listInsertLast(escaper->orders,order);
@@ -231,6 +231,11 @@ int GetNumOrders(Escaper escaper) {
     return escaper==NULL ? -1 : listGetSize(escaper->orders);
 }
 
+List GetListOfEscaper(Escaper escaper){
+    assert(escaper!=NULL);
+    return escaper->orders;
+}
+
 MtmErrorCode ClearEscaperOrders(Escaper escaper) {
     assert(escaper!=NULL);
     listClear(escaper->orders);
@@ -260,6 +265,7 @@ int EscaperHasOrder(Escaper escaper,Order order) {
 
 Order GetEscaperOrder(Escaper escaper, TechnionFaculty faculty, int id) {
     assert(escaper!=NULL);
+    assert(escaper->orders!=NULL);
     LIST_FOREACH(Order, i,escaper->orders) {
         if( (id==GetID(i)) && (faculty==GetOrderFaculty(i)) )
             return i;

@@ -21,11 +21,11 @@ struct escRoom {
 
 
 static inline int ValidateTime(int time) {
-    return (time > 0 && time < 23);
+    return (time > -1 && time < 25);
 }
 
 static inline int ValidateDifficulty(int difficulty) {
-    return (difficulty > 0 && difficulty < 10);
+    return (difficulty > 0 && difficulty < 11);
 }
 
 static MtmErrorCode ValidateRoomParameters(char* Email,int id,int price,int num_ppl, int start_time,

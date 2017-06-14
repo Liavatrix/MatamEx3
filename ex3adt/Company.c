@@ -203,25 +203,9 @@ int GetNumRooms(Company company){
     return company==NULL ? -1 : setGetSize(company->rooms);
 }
 
-MtmErrorCode UpdateCompanyIncome(Company company , Order order){
+void UpdateCompanyIncome(Company company , int price){
     assert(company!=NULL);
-    if(order ==NULL)
-        return MTM_NULL_PARAMETER;
-    Room room=NULL;
-    int days_left = GetRemainingDays(order);
-    int hours_left = GetRemainingHours(order);
-    if( days_left==-1 || hours_left == -1)
-        return MTM_INVALID_PARAMETER;
-    if(days_left!=0)
-        return MTM_SUCCESS;
-    room = RoomOfOrder(company,order);
-    if(room==NULL)
-        return MTM_NO_ROOMS_AVAILABLE;
-    int price = GetRoomPrice(room);
-    if(company->faculty==GetOrderFaculty(order))
-        price= (price*3)/4;
     company->income+=price;
-    return MTM_SUCCESS;
 }
 
 TechnionFaculty GetCompanyFaculty(Company company) {
@@ -235,7 +219,8 @@ char* GetCompanyEmail(Company company) {
     //returns pointer to email !!!
 }
 
-
-
-
+Set  GetCompanyRooms(Company company){
+    assert(company!=NULL);
+    return company->rooms;
+}
 
